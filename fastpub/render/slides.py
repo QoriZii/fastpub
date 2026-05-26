@@ -23,11 +23,40 @@ def render_slides(
     output_path: Path,
     no_audio: bool = False,
     aspect: str = "4:3",
+    image_provider: str | None = None,
 ) -> Path:
     """Render PaperDocument to an HTML slide deck that prints as PDF."""
     if aspect not in _ASPECT_RATIOS:
         raise ValueError(f"Unsupported aspect ratio: {aspect!r}. Use '4:3' or '16:9'.")
-    slides = _build_slides(doc)
+
+    if image_provider:
+        from fastpub.pipeline.scene_script import generate_scene_script
+        from fastpub.pipeline.image_gen import generate_images
+        from fastpub.ai.image_providers import get_provider
+        from fastpub import config
+
+        import json
+        import typer
+
+        typer.echo("  Generating scene script...")
+        scenes = generate_scene_script(doc)
+
+        # Save scenes.json for video stage reuse
+        base_name = output_path.stem.replace(".slides", "")
+        assets_dir = output_path.parent / base_name
+        scenes_path = output_path.parent / f"{base_name}.scenes.json"
+        scenes_path.write_text(json.dumps(scenes, ensure_ascii=False, indent=2))
+
+        typer.echo(f"  Generating images ({image_provider})...")
+        provider = get_provider(image_provider, api_key=config.XAI_API_KEY)
+        images_dir = assets_dir / "images"
+        image_map = generate_images(scenes, provider, images_dir)
+
+        # Convert scenes to _Slide objects for HTML generation
+        slides = _slides_from_scenes(scenes, image_map)
+    else:
+        slides = _build_slides(doc)
+
     result = _build_html(doc, slides, aspect=aspect)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(result, encoding="utf-8")
@@ -140,6 +169,27 @@ def _build_slides(doc: PaperDocument) -> list[_Slide]:
     return slides
 
 
+def _slides_from_scenes(scenes: list[dict], image_map: dict[str, str]) -> list[_Slide]:
+    """Convert scene script dicts to _Slide objects for HTML rendering."""
+    slides: list[_Slide] = []
+    for scene in scenes:
+        scene_type = scene.get("sceneType", "other")
+        headline = scene.get("headline", "")
+        body = scene.get("body", "")
+        scene_id = scene.get("id", "")
+
+        bullets = [body] if body else []
+        figure_src = image_map.get(scene_id)
+
+        slides.append(_Slide(
+            slide_type=scene_type,
+            title=headline,
+            bullets=bullets,
+            figure_src=figure_src,
+        ))
+    return slides
+
+
 # ---------------------------------------------------------------------------
 # HTML generation
 # ---------------------------------------------------------------------------
@@ -153,8 +203,10 @@ _TYPE_COLORS = {
     "hook": "#7C3AED",
     "problem": "#DC2626",
     "method": "#2563EB",
+    "approach": "#2563EB",
     "results": "#059669",
     "significance": "#D97706",
+    "closing": "#1E3A5F",
     "takeaway": "#1E3A5F",
 }
 

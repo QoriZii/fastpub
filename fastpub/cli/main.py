@@ -82,6 +82,7 @@ def render(
     aspect: str = typer.Option("4:3", "--aspect", help="Slide aspect ratio: 4:3 | 16:9"),
     voice: Optional[str] = typer.Option(None, "--voice", help="TTS voice: eve, ara, rex, sal, leo"),
     no_audio: bool = typer.Option(False, "--no-audio", help="Skip audio generation"),
+    image_provider: Optional[str] = typer.Option(None, "--image-provider", help="Image generation provider: xai"),
 ):
     """Render analysis.json into output format(s)."""
     from fastpub.models import PaperDocument
@@ -112,7 +113,7 @@ def render(
                 from fastpub.render.slides import render_slides
 
                 out_path = output or out_dir / f"{base_name}.slides.html"
-                result = render_slides(doc, out_path, no_audio=no_audio, aspect=aspect)
+                result = render_slides(doc, out_path, no_audio=no_audio, aspect=aspect, image_provider=image_provider)
                 typer.echo(f"  Slides: {result}")
 
             case "video":
@@ -139,6 +140,7 @@ def go(
     aspect: str = typer.Option("4:3", "--aspect", help="Slide aspect ratio: 4:3 | 16:9"),
     voice: Optional[str] = typer.Option(None, "--voice", help="TTS voice: eve, ara, rex, sal, leo"),
     no_audio: bool = typer.Option(False, "--no-audio", help="Skip audio generation"),
+    image_provider: Optional[str] = typer.Option(None, "--image-provider", help="Image generation provider: xai"),
 ):
     """One-shot: analyze + render without manual editing."""
     from fastpub.pipeline.parse_pdf import parse_pdf
@@ -179,7 +181,7 @@ def go(
 
             case "slides":
                 from fastpub.render.slides import render_slides
-                result = render_slides(doc, out_dir / f"{base_name}.slides.html", no_audio=no_audio, aspect=aspect)
+                result = render_slides(doc, out_dir / f"{base_name}.slides.html", no_audio=no_audio, aspect=aspect, image_provider=image_provider)
                 typer.echo(f"  Slides: {result}")
 
             case "video":

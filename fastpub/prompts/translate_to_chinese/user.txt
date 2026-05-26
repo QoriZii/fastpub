@@ -1,0 +1,20 @@
+Translate the following research paper summary from English to Simplified Chinese.
+
+## Paper Title
+{{title}}
+
+## Narrative
+- Hook: {{hook}}
+- Problem: {{problem}}
+- Approach: {{approach}}
+- Results: {{results}}
+- Significance: {{significance}}
+
+## Sections
+{{sections}}
+
+## Figures
+{{figures}}
+
+## Abstract
+{{abstract}}

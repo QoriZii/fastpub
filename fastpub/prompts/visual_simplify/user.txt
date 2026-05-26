@@ -1,0 +1,17 @@
+Create a simplified SVG diagram for the following figure.
+
+## Original Figure Description
+{{aiDescription}}
+
+## Original Caption
+{{caption}}
+
+## Figure Type
+{{figureType}}
+
+## Paper Context
+Title: {{paperTitle}}
+This figure appears in the {{sectionContext}} of the paper.
+
+## What to Simplify
+Focus on the main takeaway. Remove unnecessary detail, simplify axes and labels, and make the visual immediately understandable to someone outside the field.

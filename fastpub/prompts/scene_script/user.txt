@@ -1,0 +1,18 @@
+Create a short-form video scene script from the following paper analysis.
+
+## Paper
+Title: {{title}}
+Authors: {{authors}}
+
+## Narrative
+- Hook: {{hook}}
+- Problem: {{problem}}
+- Approach: {{approach}}
+- Results: {{results}}
+- Significance: {{significance}}
+
+## Key Sections
+{{sections}}
+
+## Available Figures
+{{figures}}

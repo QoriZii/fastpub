@@ -1,0 +1,93 @@
+<h2>Design Section 1 (Revised): Data Flow</h2>
+<p class="subtitle">Scene script + image gen belong to slides; TTS + Remotion belong to video</p>
+
+<div style="background: #1a1a2e; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; color: #e0e0e0;">
+  <div style="text-align: center; font-size: 0.75rem; color: #888; margin-bottom: 1.5rem;">REVISED PIPELINE</div>
+
+  <!-- Slides Stage -->
+  <div style="border: 2px solid #2563EB; border-radius: 10px; padding: 1.2rem; margin-bottom: 1rem;">
+    <div style="font-size: 0.7rem; font-weight: 700; color: #2563EB; letter-spacing: 0.05em; margin-bottom: 0.8rem;">SLIDES STAGE (already exists, extended)</div>
+
+    <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+      <div style="background: #7C3AED; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-align: center; font-size: 0.82rem;">
+        <strong>Scene Script</strong><br><span style="opacity:0.7; font-size:0.7rem;">LLM &rarr; scenes[]</span>
+      </div>
+      <div style="color: #666;">&#8594;</div>
+      <div style="background: #2563EB; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-align: center; font-size: 0.82rem;">
+        <strong>Image Gen</strong><br><span style="opacity:0.7; font-size:0.7rem;">AI visuals per scene</span>
+      </div>
+      <div style="color: #666;">&#8594;</div>
+      <div style="background: #374151; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-align: center; font-size: 0.82rem;">
+        <strong>HTML Slides</strong><br><span style="opacity:0.7; font-size:0.7rem;">existing renderer</span>
+      </div>
+    </div>
+
+    <div style="font-size: 0.75rem; color: #888; margin-top: 0.8rem;">
+      Output: slides HTML + <code>scenes.json</code> + <code>images/</code> directory
+    </div>
+  </div>
+
+  <!-- Arrow between stages -->
+  <div style="text-align: center; font-size: 1.5rem; color: #555; margin: 0.5rem 0;">&#8595;</div>
+  <div style="text-align: center; font-size: 0.75rem; color: #888; margin-bottom: 0.5rem;">
+    Video stage consumes slides output
+  </div>
+
+  <!-- Video Stage -->
+  <div style="border: 2px solid #DC2626; border-radius: 10px; padding: 1.2rem;">
+    <div style="font-size: 0.7rem; font-weight: 700; color: #DC2626; letter-spacing: 0.05em; margin-bottom: 0.8rem;">VIDEO STAGE (new)</div>
+
+    <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+      <div style="background: #D97706; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-align: center; font-size: 0.82rem;">
+        <strong>TTS Narration</strong><br><span style="opacity:0.7; font-size:0.7rem;">audio per scene</span>
+      </div>
+      <div style="color: #666;">&#8594;</div>
+      <div style="background: #059669; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-align: center; font-size: 0.82rem;">
+        <strong>Build Manifest</strong><br><span style="opacity:0.7; font-size:0.7rem;">scenes + audio + images</span>
+      </div>
+      <div style="color: #666;">&#8594;</div>
+      <div style="background: #DC2626; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-align: center; font-size: 0.82rem;">
+        <strong>Remotion Render</strong><br><span style="opacity:0.7; font-size:0.7rem;">npx remotion render</span>
+      </div>
+    </div>
+
+    <div style="font-size: 0.75rem; color: #888; margin-top: 0.8rem;">
+      Input: slides output &bull; Output: <code>output.mp4</code>
+    </div>
+  </div>
+</div>
+
+<!-- What this means -->
+<h3>What This Changes</h3>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+  <div style="background: #f0f4ff; border-radius: 8px; padding: 1rem; border-left: 3px solid #2563EB;">
+    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem;">Slides renderer gets richer</div>
+    <div style="font-size: 0.82rem; color: #555;">
+      The existing <code>render_slides()</code> gains scene scripting and AI image generation. Slides become the <em>source of truth</em> for content — both the HTML deck and video consume the same scenes + images.
+    </div>
+  </div>
+  <div style="background: #fef2f2; border-radius: 8px; padding: 1rem; border-left: 3px solid #DC2626;">
+    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem;">Video renderer is a thin layer</div>
+    <div style="font-size: 0.82rem; color: #555;">
+      <code>render_video()</code> reads the slides output, adds TTS audio + timing, builds the manifest, and shells out to Remotion. No content generation — just audio + animation.
+    </div>
+  </div>
+  <div style="background: #f0fdf4; border-radius: 8px; padding: 1rem; border-left: 3px solid #059669;">
+    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem;">Shared content, two outputs</div>
+    <div style="font-size: 0.82rem; color: #555;">
+      <code>fastpub render -f slides</code> &rarr; HTML deck<br>
+      <code>fastpub render -f video</code> &rarr; runs slides stage first, then adds audio + renders MP4<br>
+      <code>fastpub render -f slides,video</code> &rarr; slides stage runs once, both outputs produced
+    </div>
+  </div>
+  <div style="background: #fffbeb; border-radius: 8px; padding: 1rem; border-left: 3px solid #D97706;">
+    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem;">Manifest still the same</div>
+    <div style="font-size: 0.82rem; color: #555;">
+      The JSON manifest schema doesn't change — it just gets assembled from slides output + TTS results instead of being built from scratch in the video stage.
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 2rem; padding: 1rem; background: #fffbeb; border-radius: 8px; border-left: 4px solid #D97706;">
+  <strong>Does this split feel right?</strong> Slides own the content (scenes + visuals), video just adds audio and renders.
+</div>

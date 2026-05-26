@@ -1,0 +1,7 @@
+Write narration for the following slide deck.
+
+## Paper Title
+{{title}}
+
+## Slides
+{{slides}}

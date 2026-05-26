@@ -1,0 +1,15 @@
+Analyze the following research paper and produce a PaperDocument JSON.
+
+## Paper Text
+
+{{paperText}}
+
+## Figures
+
+{{#if hasFigures}}
+The paper contains {{figureCount}} figures. They are provided as images in this message. For each figure, identify its caption from the paper text and assign an ID (fig-1, fig-2, etc.) in order of appearance.
+{{/if}}
+
+{{#if noFigures}}
+No figures were extracted from this paper. Set the `figures` array to empty.
+{{/if}}

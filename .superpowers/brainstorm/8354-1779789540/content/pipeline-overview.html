@@ -1,0 +1,74 @@
+<h2>Video Generation Pipeline</h2>
+<p class="subtitle">Your proposed flow — does this capture it correctly?</p>
+
+<div style="background: #1a1a2e; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; color: #e0e0e0; font-family: monospace; font-size: 0.85rem; overflow-x: auto;">
+  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+    <!-- Stage 1 -->
+    <div style="background: #7C3AED; color: white; padding: 0.8rem 1.2rem; border-radius: 8px; text-align: center; min-width: 140px;">
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.3rem;">STAGE 1</div>
+      <div style="font-weight: bold; font-size: 1rem;">Narrative</div>
+      <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.3rem;">LLM generates scene script from PaperDocument</div>
+    </div>
+    <div style="color: #7C3AED; font-size: 1.5rem;">&#8594;</div>
+
+    <!-- Stage 2 -->
+    <div style="background: #2563EB; color: white; padding: 0.8rem 1.2rem; border-radius: 8px; text-align: center; min-width: 140px;">
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.3rem;">STAGE 2</div>
+      <div style="font-weight: bold; font-size: 1rem;">Visuals</div>
+      <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.3rem;">Generate images / select figures per scene</div>
+    </div>
+    <div style="color: #2563EB; font-size: 1.5rem;">&#8594;</div>
+
+    <!-- Stage 3 -->
+    <div style="background: #059669; color: white; padding: 0.8rem 1.2rem; border-radius: 8px; text-align: center; min-width: 140px;">
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.3rem;">STAGE 3</div>
+      <div style="font-weight: bold; font-size: 1rem;">Canvas Layout</div>
+      <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.3rem;">Place text + images on slide canvases</div>
+    </div>
+    <div style="color: #059669; font-size: 1.5rem;">&#8594;</div>
+
+    <!-- Stage 4 -->
+    <div style="background: #D97706; color: white; padding: 0.8rem 1.2rem; border-radius: 8px; text-align: center; min-width: 140px;">
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.3rem;">STAGE 4</div>
+      <div style="font-weight: bold; font-size: 1rem;">Audio</div>
+      <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.3rem;">TTS narration + duration alignment</div>
+    </div>
+    <div style="color: #D97706; font-size: 1.5rem;">&#8594;</div>
+
+    <!-- Stage 5 -->
+    <div style="background: #DC2626; color: white; padding: 0.8rem 1.2rem; border-radius: 8px; text-align: center; min-width: 140px;">
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.3rem;">STAGE 5</div>
+      <div style="font-weight: bold; font-size: 1rem;">Animate + Render</div>
+      <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.3rem;">Shadows, mouse cursor, transitions &#8594; MP4</div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 2rem;">
+  <h3>Key Question</h3>
+  <p class="subtitle" style="margin-bottom: 1rem;">What kind of output video are you imagining?</p>
+
+  <div class="options">
+    <div class="option" data-choice="screencast" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Screencast Style</h3>
+        <p>Looks like someone presenting slides — cursor moves to highlight points, elements appear progressively, smooth transitions between slides. Like a polished screen recording of a presentation.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="motion-graphics" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Motion Graphics Style</h3>
+        <p>Cinematic text animations, kinetic typography, figures fly in with spring physics. More like a YouTube explainer video (Kurzgesagt-lite). No cursor — everything animates on its own.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="hybrid" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Hybrid</h3>
+        <p>Slide-based canvas with a cursor for pointing/highlighting, but elements also animate in (fade, slide). A middle ground — feels like an animated presentation with a virtual presenter's cursor.</p>
+      </div>
+    </div>
+  </div>
+</div>

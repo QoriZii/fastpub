@@ -1,0 +1,19 @@
+Create a slide deck from the following paper analysis.
+
+## Paper
+Title: {{title}}
+Authors: {{authors}}
+Venue: {{venue}}
+
+## Narrative
+- Hook: {{hook}}
+- Problem: {{problem}}
+- Approach: {{approach}}
+- Results: {{results}}
+- Significance: {{significance}}
+
+## Sections
+{{sections}}
+
+## Available Figures
+{{figures}}

@@ -19,3 +19,8 @@ dependencies = [
 
 [project.scripts]
 fastpub = "fastpub.cli.main:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]

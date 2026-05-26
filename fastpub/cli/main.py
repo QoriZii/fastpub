@@ -120,7 +120,7 @@ def render(
                 from fastpub.render.video import render_video
 
                 out_path = output or out_dir / f"{base_name}.mp4"
-                result = render_video(doc, out_path, no_audio=no_audio)
+                result = render_video(doc, out_path, no_audio=no_audio, image_provider=image_provider, voice=voice or "sal")
                 typer.echo(f"  Video: {result}")
 
             case _:
@@ -186,7 +186,7 @@ def go(
 
             case "video":
                 from fastpub.render.video import render_video
-                result = render_video(doc, out_dir / f"{base_name}.mp4", no_audio=no_audio)
+                result = render_video(doc, out_dir / f"{base_name}.mp4", no_audio=no_audio, image_provider=image_provider, voice=voice or "sal")
                 typer.echo(f"  Video: {result}")
 
             case _:

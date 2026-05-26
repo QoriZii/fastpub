@@ -10,3 +10,4 @@ build/
 *.pptx
 *.analysis.json
 .DS_Store
+packages/remotion-video/node_modules/

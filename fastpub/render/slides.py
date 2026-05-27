@@ -218,11 +218,11 @@ def _render_bar_chart(title: str, data: dict) -> str:
     for label, val in zip(labels, values):
         pct = (val / max_val * 100) if max_val else 0
         bars.append(f"""<div style="display:flex;align-items:center;gap:16px;">
-  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">{_esc(str(label))}</span>
-  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
-    <div style="width:{pct:.1f}%;height:100%;background:{color};border-radius:8px;transition:width 0.6s;"></div>
+  <span style="min-width:220px;text-align:right;font-size:var(--type-small);white-space:nowrap;">{_esc(str(label))}</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:12px;height:64px;position:relative;overflow:hidden;">
+    <div style="width:{pct:.1f}%;height:100%;background:{color};border-radius:12px;transition:width 0.6s;"></div>
   </div>
-  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">{val}{unit}</span>
+  <span style="min-width:100px;font-size:var(--type-small);font-weight:600;">{val}{unit}</span>
 </div>""")
 
     callout = data.get("callout")
@@ -276,8 +276,8 @@ def _render_donut_chart(title: str, data: dict) -> str:
         return ""
 
     # Build SVG donut
-    r, cx, cy = 90, 120, 120
-    stroke_width = 35
+    r, cx, cy = 150, 200, 200
+    stroke_width = 55
     circumference = 2 * 3.14159 * r
     paths = []
     offset = 0
@@ -295,12 +295,12 @@ def _render_donut_chart(title: str, data: dict) -> str:
     center_value = data.get("centerValue", "")
     center_html = ""
     if center_value:
-        center_html = f'<text x="{cx}" y="{cy-8}" text-anchor="middle" font-size="28" font-weight="700" fill="var(--c-text)">{_esc(str(center_value))}</text><text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="14" fill="var(--c-text-muted)">{_esc(center_label)}</text>'
+        center_html = f'<text x="{cx}" y="{cy-12}" text-anchor="middle" font-size="44" font-weight="700" fill="var(--c-text)">{_esc(str(center_value))}</text><text x="{cx}" y="{cy+28}" text-anchor="middle" font-size="22" fill="var(--c-text-muted)">{_esc(center_label)}</text>'
 
     legend_items = []
     for i, seg in enumerate(segments):
         color = seg.get("color", default_colors[i % len(default_colors)])
-        legend_items.append(f'<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:{color};flex-shrink:0;"></span><span style="font-size:var(--type-label);">{_esc(seg["label"])} ({seg["value"]})</span></div>')
+        legend_items.append(f'<div style="display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border-radius:4px;background:{color};flex-shrink:0;"></span><span style="font-size:var(--type-small);">{_esc(seg["label"])} ({seg["value"]})</span></div>')
 
     # Side bars if provided
     side_bars = data.get("sideBars", [])
@@ -310,18 +310,18 @@ def _render_donut_chart(title: str, data: dict) -> str:
         sb_items = []
         for sb in side_bars:
             sb_pct = (sb["value"] / sb_max * 100) if sb_max else 0
-            sb_items.append(f"""<div style="display:flex;align-items:center;gap:12px;">
-  <span style="min-width:100px;font-size:var(--type-label);text-align:right;">{_esc(sb.get("label", ""))}</span>
-  <div style="flex:1;background:var(--c-primary-light);border-radius:6px;height:28px;overflow:hidden;">
-    <div style="width:{sb_pct:.1f}%;height:100%;background:var(--c-primary);border-radius:6px;"></div>
+            sb_items.append(f"""<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:140px;font-size:var(--type-small);text-align:right;">{_esc(sb.get("label", ""))}</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;overflow:hidden;">
+    <div style="width:{sb_pct:.1f}%;height:100%;background:var(--c-primary);border-radius:8px;"></div>
   </div>
-  <span style="font-size:var(--type-label);font-weight:600;min-width:40px;">{sb["value"]}</span>
+  <span style="font-size:var(--type-small);font-weight:600;min-width:50px;">{sb["value"]}</span>
 </div>""")
         side_bars_html = f'<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">{chr(10).join(sb_items)}</div>'
 
     return f"""<div style="display:flex;align-items:center;gap:48px;flex:1;justify-content:center;">
   <div style="flex-shrink:0;">
-    <svg width="240" height="240" viewBox="0 0 240 240">
+    <svg width="400" height="400" viewBox="0 0 400 400">
       {chr(10).join(paths)}
       {center_html}
     </svg>
@@ -387,7 +387,7 @@ def _render_funnel(title: str, data: dict) -> str:
         bars.append(f"""<div style="display:flex;align-items:center;gap:16px;">
   <span style="min-width:140px;text-align:right;font-size:var(--type-small);">{_esc(stage["label"])}</span>
   <div style="flex:1;position:relative;">
-    <div style="margin-left:{margin:.1f}%;width:{pct:.1f}%;height:48px;background:var(--c-primary);border-radius:8px;opacity:{1 - i * 0.15:.2f};display:flex;align-items:center;justify-content:center;">
+    <div style="margin-left:{margin:.1f}%;width:{pct:.1f}%;height:72px;background:var(--c-primary);border-radius:12px;opacity:{1 - i * 0.15:.2f};display:flex;align-items:center;justify-content:center;">
       <span style="color:white;font-weight:600;font-size:var(--type-small);">{stage["value"]}</span>
     </div>
   </div>
@@ -430,10 +430,10 @@ def _render_steps(title: str, data: dict) -> str:
     for step in steps:
         num = step.get("number", "")
         items.append(f"""<div style="display:flex;gap:20px;align-items:flex-start;">
-  <div style="width:48px;height:48px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">{num}</div>
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-body);flex-shrink:0;">{num}</div>
   <div style="flex:1;">
     <p style="margin:0;font-weight:600;font-size:var(--type-body);">{_esc(step.get("title", ""))}</p>
-    <p style="margin:4px 0 0;font-size:var(--type-small);color:var(--c-text-muted);line-height:1.4;">{_esc(step.get("description", ""))}</p>
+    <p style="margin:8px 0 0;font-size:var(--type-small);color:var(--c-text-muted);line-height:1.4;">{_esc(step.get("description", ""))}</p>
   </div>
 </div>""")
 
@@ -454,13 +454,13 @@ def _render_proportion(title: str, data: dict) -> str:
     for i, b in enumerate(blocks):
         color = b.get("color", default_colors[i % len(default_colors)])
         for _ in range(b.get("count", 0)):
-            cells.append(f'<div style="width:40px;height:40px;border-radius:6px;background:{color};"></div>')
+            cells.append(f'<div style="width:56px;height:56px;border-radius:8px;background:{color};"></div>')
 
     legend = []
     for i, b in enumerate(blocks):
         color = b.get("color", default_colors[i % len(default_colors)])
         pct = b.get("count", 0) / total * 100
-        legend.append(f'<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:{color};"></span><span style="font-size:var(--type-label);">{_esc(b["label"])} ({pct:.0f}%)</span></div>')
+        legend.append(f'<div style="display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border-radius:4px;background:{color};"></span><span style="font-size:var(--type-small);">{_esc(b["label"])} ({pct:.0f}%)</span></div>')
 
     return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
   <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
@@ -504,9 +504,9 @@ def _render_area_blocks(title: str, data: dict) -> str:
 
     # Size presets: height and font sizing
     size_map = {
-        "large": ("180px", "1fr", "var(--type-subtitle)", "var(--type-small)"),
-        "medium": ("140px", "1fr", "var(--type-body)", "var(--type-label)"),
-        "small": ("100px", "1fr", "var(--type-small)", "var(--type-label)"),
+        "large": ("240px", "1fr", "var(--type-subtitle)", "var(--type-small)"),
+        "medium": ("180px", "1fr", "var(--type-body)", "var(--type-small)"),
+        "small": ("140px", "1fr", "var(--type-small)", "var(--type-label)"),
     }
 
     block_html = []
@@ -578,13 +578,13 @@ def _render_stacked_bar(title: str, data: dict) -> str:
     for i, s in enumerate(segments):
         color = s.get("color", default_colors[i % len(default_colors)])
         pct = s["value"] / total * 100
-        seg_html.append(f'<div style="width:{pct:.1f}%;height:100%;background:{color};display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:var(--type-label);overflow:hidden;white-space:nowrap;">{pct:.0f}%</div>')
+        seg_html.append(f'<div style="width:{pct:.1f}%;height:100%;background:{color};display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:var(--type-small);overflow:hidden;white-space:nowrap;">{pct:.0f}%</div>')
 
     # Legend
     legend_items = []
     for i, s in enumerate(segments):
         color = s.get("color", default_colors[i % len(default_colors)])
-        legend_items.append(f'<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:{color};flex-shrink:0;"></span><span style="font-size:var(--type-label);">{_esc(s["label"])} ({s["value"]})</span></div>')
+        legend_items.append(f'<div style="display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border-radius:4px;background:{color};flex-shrink:0;"></span><span style="font-size:var(--type-small);">{_esc(s["label"])} ({s["value"]})</span></div>')
 
     # Country labels if provided
     countries = data.get("countries", [])
@@ -604,7 +604,7 @@ def _render_stacked_bar(title: str, data: dict) -> str:
 
     return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
   <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  <div style="display:flex;height:64px;border-radius:12px;overflow:hidden;">
+  <div style="display:flex;height:96px;border-radius:16px;overflow:hidden;">
     {chr(10).join(seg_html)}
   </div>
   <div style="display:flex;gap:24px;flex-wrap:wrap;">
@@ -626,10 +626,10 @@ def _render_card_grid(title: str, data: dict) -> str:
     for c in cards:
         num = c.get("number", "")
         card_html.append(f"""<div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;gap:20px;align-items:flex-start;">
-  <div style="width:44px;height:44px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">{num}</div>
+  <div style="width:56px;height:56px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">{num}</div>
   <div style="flex:1;">
-    <p style="margin:0;font-weight:600;font-size:var(--type-small);">{_esc(c.get("title", ""))}</p>
-    <p style="margin:8px 0 0;font-size:var(--type-label);color:var(--c-text-muted);line-height:1.5;">{_esc(c.get("description", ""))}</p>
+    <p style="margin:0;font-weight:600;font-size:var(--type-body);">{_esc(c.get("title", ""))}</p>
+    <p style="margin:8px 0 0;font-size:var(--type-small);color:var(--c-text-muted);line-height:1.5;">{_esc(c.get("description", ""))}</p>
   </div>
 </div>""")
 

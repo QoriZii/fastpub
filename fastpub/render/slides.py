@@ -10,6 +10,7 @@ import html
 from pathlib import Path
 
 from fastpub.models import PaperDocument, PaperFigure, SlideSpec, VisualizationData
+from fastpub.render.theme import WARM_SERIF, build_slide_css, font_import_tag
 
 
 _ASPECT_RATIOS = {
@@ -280,7 +281,7 @@ def _render_donut_chart(title: str, data: dict) -> str:
     circumference = 2 * 3.14159 * r
     paths = []
     offset = 0
-    default_colors = ["#0d7c7f", "#d97757", "#6366f1", "#16a34a", "#f59e0b", "#ec4899"]
+    default_colors = WARM_SERIF.chart_colors
 
     for i, seg in enumerate(segments):
         pct = seg["value"] / total
@@ -448,7 +449,7 @@ def _render_proportion(title: str, data: dict) -> str:
     if not blocks or total == 0:
         return ""
 
-    default_colors = ["#0d7c7f", "#d97757", "#6366f1", "#16a34a", "#f59e0b"]
+    default_colors = WARM_SERIF.chart_colors
     cells = []
     for i, b in enumerate(blocks):
         color = b.get("color", default_colors[i % len(default_colors)])
@@ -499,7 +500,7 @@ def _render_area_blocks(title: str, data: dict) -> str:
     if not blocks:
         return ""
 
-    default_colors = ["#0d7c7f", "#d97757", "#6366f1", "#16a34a", "#f59e0b", "#ec4899"]
+    default_colors = WARM_SERIF.chart_colors
 
     # Size presets: height and font sizing
     size_map = {
@@ -567,7 +568,7 @@ def _render_stacked_bar(title: str, data: dict) -> str:
     if not segments:
         return ""
 
-    default_colors = ["#0d7c7f", "#d97757", "#6366f1", "#16a34a", "#f59e0b", "#ec4899"]
+    default_colors = WARM_SERIF.chart_colors
     total = sum(s.get("value", 0) for s in segments)
     if total == 0:
         return ""
@@ -690,8 +691,8 @@ def _esc(s: str) -> str:
 _BG_STYLES = {
     "title": "dark",
     "closing": "dark",
-    "significance": "accent",
-    "accent": "accent",
+    "significance": "dark",
+    "accent": "dark",
     "dark": "dark",
 }
 
@@ -841,13 +842,13 @@ def _build_html(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{_esc(doc.meta.title)} — Slides</title>
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+{font_import_tag(WARM_SERIF)}
 
 <script type="application/json" id="speaker-notes">
 {notes_json}
 </script>
 
-{_build_styles()}
+{build_slide_css(WARM_SERIF)}
 <script>{deck_stage_js}</script>
 </head>
 <body>
@@ -862,143 +863,3 @@ def _build_html(
 </body>
 </html>"""
 
-
-# ---------------------------------------------------------------------------
-# Styles — design system matching the reference deck quality
-# ---------------------------------------------------------------------------
-
-def _build_styles() -> str:
-    return """<style>
-  :root {
-    /* Type scale */
-    --type-title: 64px;
-    --type-subtitle: 44px;
-    --type-body: 34px;
-    --type-small: 28px;
-    --type-label: 24px;
-
-    /* Spacing */
-    --pad-top: 100px;
-    --pad-bottom: 80px;
-    --pad-x: 100px;
-    --gap-title: 52px;
-    --gap-item: 28px;
-
-    /* Colors */
-    --c-bg: #f8f7f5;
-    --c-bg-dark: #1a2634;
-    --c-bg-accent: #0d4f52;
-    --c-text: #1a1a1a;
-    --c-text-light: #f8f7f5;
-    --c-text-muted: #6b7280;
-    --c-primary: #0d7c7f;
-    --c-primary-light: #e0f5f5;
-    --c-accent: #d97757;
-    --c-accent-light: #fef0ea;
-
-    /* Font */
-    --font: 'DM Sans', system-ui, sans-serif;
-    --font-mono: 'DM Mono', monospace;
-  }
-
-  deck-stage {
-    font-family: var(--font);
-  }
-
-  section {
-    background: var(--c-bg);
-    color: var(--c-text);
-    transition: opacity 0.4s ease;
-  }
-
-  /* ── Shared slide utilities ─────────────────────── */
-  .slide-pad {
-    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-  }
-
-  .slide-pad.dark {
-    background: var(--c-bg-dark);
-    color: var(--c-text-light);
-  }
-
-  .slide-pad.accent {
-    background: var(--c-bg-accent);
-    color: var(--c-text-light);
-  }
-
-  .slide-title {
-    font-size: var(--type-title);
-    font-weight: 700;
-    line-height: 1.15;
-    margin: 0;
-    letter-spacing: -0.02em;
-  }
-
-  .slide-subtitle {
-    font-size: var(--type-subtitle);
-    font-weight: 400;
-    line-height: 1.35;
-    margin: 0;
-    color: var(--c-text-muted);
-  }
-
-  .dark .slide-subtitle {
-    color: rgba(255,255,255,0.5);
-  }
-
-  .accent .slide-subtitle {
-    color: rgba(255,255,255,0.65);
-  }
-
-  .slide-body {
-    font-size: var(--type-body);
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  .label {
-    font-family: var(--font-mono);
-    font-size: var(--type-label);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--c-primary);
-    margin: 0;
-  }
-
-  .dark .label, .accent .label {
-    color: var(--c-accent);
-  }
-
-  /* ── Stat card ─────────────────────── */
-  .stat-card {
-    background: white;
-    border-radius: 16px;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-  .dark .stat-card {
-    background: rgba(255,255,255,0.08);
-  }
-  .stat-card .stat-num {
-    font-size: 80px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.03em;
-  }
-  .stat-card .stat-label {
-    font-size: var(--type-small);
-    line-height: 1.35;
-    color: var(--c-text-muted);
-  }
-  .dark .stat-card .stat-label {
-    color: rgba(255,255,255,0.55);
-  }
-</style>"""

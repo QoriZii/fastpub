@@ -6,9 +6,6 @@ dist/
 build/
 .venv/
 .env
-*.mp4
 *.pptx
 *.analysis.json
 .DS_Store
-packages/remotion-video/node_modules/
-packages/remotion-video/dist/

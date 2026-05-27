@@ -1,20 +1,13 @@
-Translate the following research paper summary from English to Simplified Chinese.
+Translate the following research paper summary from English to Simplified Chinese. Translate ALL content except person names.
 
 ## Paper Title
 {{title}}
 
-## Narrative
-- Hook: {{hook}}
-- Problem: {{problem}}
-- Approach: {{approach}}
-- Results: {{results}}
-- Significance: {{significance}}
-
-## Sections
-{{sections}}
-
-## Figures
-{{figures}}
-
 ## Abstract
 {{abstract}}
+
+## Hook
+{{hook}}
+
+## Web Sections
+{{webSections}}

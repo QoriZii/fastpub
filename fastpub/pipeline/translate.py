@@ -1,6 +1,7 @@
 """LLM translation — translate PaperDocument content to Chinese."""
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import typer
@@ -12,35 +13,35 @@ from fastpub.prompts import build_prompt
 
 
 def translate_to_chinese(doc: PaperDocument) -> dict[str, Any]:
-    """Translate narrative, sections, and meta to Chinese.
+    """Translate all content to Chinese (except author names).
 
-    Returns a dict with translated content matching the web renderer's
-    expected TranslatedContent shape.
+    Returns a dict matching the web renderer's expected shape:
+    {meta, hook, webSections, figures}.
     """
     from xai_sdk.chat import system, user
 
-    sections_text = "\n\n".join(
-        f"### {s.title} (id: {s.id})\n{s.summary}\nKey points:\n"
-        + "\n".join(f"- {p}" for p in s.key_points)
-        for s in doc.sections
-    )
+    # Serialize web sections for the prompt
+    sections_data = []
+    for s in doc.web_sections:
+        sections_data.append({
+            "type": s.type,
+            "summary": s.summary,
+            "subIssues": [
+                {"title": si.title, "description": si.description}
+                for si in s.sub_issues
+            ],
+        })
 
-    figures_text = "\n\n".join(
-        f"### {f.id}\nCaption: {f.caption}\nAI Description: {f.ai_description}"
+    figures_data = [
+        {"id": f.id, "caption": f.caption, "aiDescription": f.ai_description}
         for f in doc.figures
-        if f.usability != "skip"
-    )
+    ]
 
     prompt = build_prompt("translate_to_chinese", {
         "title": doc.meta.title,
         "abstract": doc.meta.abstract,
-        "hook": doc.narrative.hook,
-        "problem": doc.narrative.problem,
-        "approach": doc.narrative.approach,
-        "results": "\n- ".join(doc.narrative.results),
-        "significance": doc.narrative.significance,
-        "sections": sections_text,
-        "figures": figures_text,
+        "hook": doc.hook,
+        "webSections": json.dumps(sections_data, ensure_ascii=False, indent=2),
     })
 
     client = make_client()

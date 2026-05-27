@@ -28,25 +28,50 @@ class PaperMeta:
 
 
 @dataclass
-class PaperSection:
-    id: str
-    type: str           # problem | method | experiment | result | discussion | other
+class SubIssue:
     title: str
-    summary: str
-    key_points: list[str] = field(default_factory=list)
-    figure_refs: list[str] = field(default_factory=list)
-    importance: str = "medium"   # high | medium | low
+    description: str
 
     @staticmethod
-    def from_dict(d: dict) -> PaperSection:
-        return PaperSection(
-            id=d["id"],
-            type=d.get("type", "other"),
+    def from_dict(d: dict) -> SubIssue:
+        return SubIssue(
             title=d.get("title", ""),
+            description=d.get("description", ""),
+        )
+
+
+@dataclass
+class WebSection:
+    """One of the 5 fixed web sections: problem, approach, meaning, result, limitation."""
+    type: str
+    summary: str
+    sub_issues: list[SubIssue] = field(default_factory=list)
+
+    @staticmethod
+    def from_dict(d: dict) -> WebSection:
+        return WebSection(
+            type=d.get("type", ""),
             summary=d.get("summary", ""),
-            key_points=d.get("keyPoints", d.get("key_points", [])),
-            figure_refs=d.get("figureRefs", d.get("figure_refs", [])),
-            importance=d.get("importance", "medium"),
+            sub_issues=[
+                SubIssue.from_dict(si)
+                for si in d.get("subIssues", d.get("sub_issues", []))
+            ],
+        )
+
+
+@dataclass
+class VisualizationData:
+    """Data for an HTML/CSS visualization to replace a paper figure."""
+    viz_type: str          # bar_chart | stat_card | donut_chart | comparison | funnel | steps | proportion | flow
+    title: str
+    data: dict = field(default_factory=dict)
+
+    @staticmethod
+    def from_dict(d: dict) -> VisualizationData:
+        return VisualizationData(
+            viz_type=d.get("vizType", d.get("viz_type", "")),
+            title=d.get("title", ""),
+            data=d.get("data", {}),
         )
 
 
@@ -58,10 +83,11 @@ class PaperFigure:
     ai_description: str = ""
     page_number: int = 0
     type: str = "diagram"        # chart | diagram | table | photo | equation
-    usability: str = "use-as-is" # use-as-is | needs-simplification | skip
+    visualization: VisualizationData | None = None
 
     @staticmethod
     def from_dict(d: dict) -> PaperFigure:
+        viz_raw = d.get("visualization")
         return PaperFigure(
             id=d["id"],
             src=d.get("src", ""),
@@ -69,57 +95,46 @@ class PaperFigure:
             ai_description=d.get("aiDescription", d.get("ai_description", "")),
             page_number=int(d.get("pageNumber", d.get("page_number", 0))),
             type=d.get("type", "diagram"),
-            usability=d.get("usability", "use-as-is"),
+            visualization=VisualizationData.from_dict(viz_raw) if viz_raw else None,
         )
 
 
 @dataclass
-class GeneratedVisual:
+class SlideSpec:
+    """One slide in the presentation, produced by the LLM."""
     id: str
-    for_figure_id: str
-    src: str
-    description: str = ""
-    generator: str = "llm-svg"   # image-api | llm-svg
+    layout: str            # title | section_header | content | figure | two_column | closing
+    title: str
+    subtitle: str = ""
+    bullets: list[str] = field(default_factory=list)
+    explanation: str = ""  # what this slide shows and why it matters
+    narrative: str = ""    # story thread connecting to the next slide
+    figure_ref: str = ""
+    visualization: VisualizationData | None = None
 
     @staticmethod
-    def from_dict(d: dict) -> GeneratedVisual:
-        return GeneratedVisual(
-            id=d["id"],
-            for_figure_id=d.get("forFigureId", d.get("for_figure_id", "")),
-            src=d.get("src", ""),
-            description=d.get("description", ""),
-            generator=d.get("generator", "llm-svg"),
-        )
-
-
-@dataclass
-class Narrative:
-    hook: str = ""
-    problem: str = ""
-    approach: str = ""
-    results: list[str] = field(default_factory=list)
-    significance: str = ""
-    audience_level: str = "academic"   # academic | general
-
-    @staticmethod
-    def from_dict(d: dict) -> Narrative:
-        return Narrative(
-            hook=d.get("hook", ""),
-            problem=d.get("problem", ""),
-            approach=d.get("approach", ""),
-            results=d.get("results", []),
-            significance=d.get("significance", ""),
-            audience_level=d.get("audienceLevel", d.get("audience_level", "academic")),
+    def from_dict(d: dict) -> SlideSpec:
+        viz_raw = d.get("visualization")
+        return SlideSpec(
+            id=d.get("id", ""),
+            layout=d.get("layout", "content"),
+            title=d.get("title", ""),
+            subtitle=d.get("subtitle", ""),
+            bullets=d.get("bullets", []),
+            explanation=d.get("explanation", ""),
+            narrative=d.get("narrative", ""),
+            figure_ref=d.get("figureRef", d.get("figure_ref", "")),
+            visualization=VisualizationData.from_dict(viz_raw) if viz_raw else None,
         )
 
 
 @dataclass
 class PaperDocument:
     meta: PaperMeta
-    sections: list[PaperSection] = field(default_factory=list)
+    hook: str = ""
+    web_sections: list[WebSection] = field(default_factory=list)
     figures: list[PaperFigure] = field(default_factory=list)
-    generated_visuals: list[GeneratedVisual] = field(default_factory=list)
-    narrative: Narrative = field(default_factory=Narrative)
+    slides: list[SlideSpec] = field(default_factory=list)
 
     # ── Serialisation ──────────────────────────────────────────────
 
@@ -134,13 +149,13 @@ class PaperDocument:
     def from_dict(raw: dict) -> PaperDocument:
         return PaperDocument(
             meta=PaperMeta.from_dict(raw.get("meta", {})),
-            sections=[PaperSection.from_dict(s) for s in raw.get("sections", [])],
-            figures=[PaperFigure.from_dict(f) for f in raw.get("figures", [])],
-            generated_visuals=[
-                GeneratedVisual.from_dict(v)
-                for v in raw.get("generatedVisuals", raw.get("generated_visuals", []))
+            hook=raw.get("hook", ""),
+            web_sections=[
+                WebSection.from_dict(s)
+                for s in raw.get("webSections", raw.get("web_sections", []))
             ],
-            narrative=Narrative.from_dict(raw.get("narrative", {})),
+            figures=[PaperFigure.from_dict(f) for f in raw.get("figures", [])],
+            slides=[SlideSpec.from_dict(s) for s in raw.get("slides", [])],
         )
 
     @staticmethod

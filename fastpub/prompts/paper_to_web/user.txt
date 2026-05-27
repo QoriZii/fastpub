@@ -1,0 +1,5 @@
+Analyze the following research paper and produce a web summary JSON.
+
+## Paper Text
+
+{{paperText}}

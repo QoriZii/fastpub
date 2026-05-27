@@ -1,0 +1,18 @@
+Design a data-rich slide deck from the following research paper. Extract every number and statistic.
+
+## Paper Text
+
+{{paperText}}
+
+## Figures
+
+{{#if hasFigures}}
+The paper contains {{figureCount}} figures provided as images. For each figure:
+1. Assign an ID (fig-1, fig-2, etc.) in order of appearance
+2. Extract the underlying data from the figure into a visualization object
+3. Reference figures in slides via figureRef
+{{/if}}
+
+{{#if noFigures}}
+No figures were extracted. Set the `figures` array to empty. Create inline visualizations on slides instead.
+{{/if}}

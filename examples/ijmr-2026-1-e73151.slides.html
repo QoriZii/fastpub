@@ -3,19 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>When Play Hurts: Understanding Common Barriers in Movement-Based Games — Slides</title>
+<title>Mapping Digital Nudges and Recommender Systems for Obesity Prevention: Scoping Review — Slides</title>
 
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <script type="application/json" id="speaker-notes">
 [
-  "",
-  "Exergames promise fun exercise through movement and play. Yet many players quit after facing real physical pain, social shame, or even addictive behaviors. Our study reveals why these barriers persist across platforms.",
-  "Despite commercial success, exergames suffer from poor long-term retention. Earlier research looked at barriers in one title or user group at a time. A holistic understanding across consoles, smartphones, and VR was missing.",
-  "We ran an online qualitative survey with 174 participants who played commercial exergames. They described barriers, effects, and their own mitigation attempts. Reports were thematically coded into environmental, physical, technological, mental, social, and game-design categories.",
-  "We found 60 distinct barriers. Just 21 of them accounted for 77 percent of all reports. Console and VR players struggled most with space and physical demands, while smartphone users faced addiction risks and unreliable GPS tracking.",
-  "Many barriers remain unresolved, especially social and mental ones. We propose adaptive spatial design, fatigue-aware pacing, platform-specific support, procedural novelty, and confidence-building social features to create safer, more engaging movement games.",
-  "This work provides actionable guidance for designing movement-based games that keep players active and injury-free. When Play Hurts, presented at CHI 2024."
+  "This review maps how digital tools are being used to support healthier choices and prevent obesity.",
+  "Obesity continues to rise, demanding scalable digital solutions that combine recommender systems with behavioral nudges.",
+  "Only studies testing systems with real humans were included, ensuring practical relevance.",
+  "The landscape shows heavy focus on nutrition with limited integration of nudges and recommenders.",
+  "Recommender systems dominate but rarely combine with explicit nudging mechanisms.",
+  "Physical activity and sedentary behavior remain significantly understudied compared to diet.",
+  "Despite theoretical synergy, very few studies test combined recommender + nudge interventions.",
+  "Lack of methodological transparency severely limits reproducibility and comparison.",
+  "Research is concentrated in wealthy nations, limiting generalizability to regions with highest obesity growth.",
+  "Systems are rarely tested with the populations they were designed for, especially older adults and clinical groups.",
+  "Small samples and short durations limit statistical power and real-world applicability.",
+  "While most evaluations report positive results, heterogeneity prevents firm conclusions on effectiveness.",
+  "These gaps must be addressed before robust effectiveness claims can be made.",
+  "Future work must move beyond technical accuracy toward robust, equitable, and sustainable health interventions.",
+  "The field is young, fragmented, and geographically narrow. Addressing the identified gaps will be essential to realize population-level impact."
 ]
 </script>
 
@@ -1914,99 +1922,536 @@
         <rect x="1400" y="600" width="400" height="400" rx="16" fill="none" stroke="var(--c-primary)" stroke-width="2" transform="rotate(15 1600 800)"/>
         <line x1="0" y1="900" x2="800" y2="900" stroke="var(--c-primary)" stroke-width="2" opacity="0.5"/>
       </svg>
-      <p class="label">CHI ’26 (2026)</p>
-      <h1 class="slide-title" style="font-size: 72px; max-width: 1400px;">When Play Hurts: Understanding Common Barriers in Movement-Based Games</h1>
-      <p class="slide-subtitle">Sebastian Cmentowski, Sukran Karaosmanoglu, Frank Steinicke, Regina Bernhaupt</p>
-      <p class="slide-subtitle">CHI ’26 (2026)</p>
+      <p class="label"></p>
+      <h1 class="slide-title" style="font-size: 72px; max-width: 1400px;">Mapping Digital Nudges &amp; Recommender Systems for Obesity Prevention</h1>
+
     </div>
   </section>
 
-  <section data-label="02 Context">
+  <section data-label="02 Content">
     <div class="slide-pad" style="gap: var(--gap-title);">
-      <p class="label">Context</p>
-      <h2 class="slide-title">Exergames Can Hurt You</h2>
-    <div style="display: flex; gap: 64px; flex: 1; align-items: center; margin-top: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
-      <p class="slide-body">Injuries, embarrassment, and addiction drive players away.</p>
-      </div>
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
-        <figure style="max-width: 100%; text-align: center;">
-          <img src="/Users/qin/Apps/fastpub-py/examples/3772318.3790905/images/scene-1.png" alt="Exergames Can Hurt You" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);">
-        </figure>
-      </div>
+      <p class="label">Content</p>
+      <h2 class="slide-title">The Scale of the Problem</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Key Public Health Numbers</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+    <div class="stat-card">
+  <div class="stat-num" style="color:#d97757;">34%</div>
+  <div class="stat-label">Adult obesity (Europe)</div>
+  
+</div>
+<div class="stat-card">
+  <div class="stat-num" style="color:#d97757;">40%</div>
+  <div class="stat-label">Adult obesity (US)</div>
+  
+</div>
+<div class="stat-card">
+  <div class="stat-num" style="color:#0d7c7f;">62%</div>
+  <div class="stat-label">Effective nudges</div>
+  <span style="font-size:var(--type-label);color:#dc2626;font-weight:500;">median 21% effect</span>
+</div>
+  </div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">Global obesity rates reach 34-40% in high-income countries; 62% of nudging treatments show significant effects with median 21% impact.</p>
     </div>
     </div>
   </section>
 
-  <section data-label="03 Problem">
+  <section data-label="03 Figure">
     <div class="slide-pad" style="gap: var(--gap-title);">
-      <p class="label">Problem</p>
-      <h2 class="slide-title">Why Do Players Quit?</h2>
-    <div style="display: flex; gap: 64px; flex: 1; align-items: center; margin-top: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
-      <p class="slide-body">Prior studies examined isolated barriers in single games. No cross-platform view existed.</p>
-      </div>
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
-        <figure style="max-width: 100%; text-align: center;">
-          <img src="/Users/qin/Apps/fastpub-py/examples/3772318.3790905/images/scene-2.png" alt="Why Do Players Quit?" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);">
-        </figure>
-      </div>
+      <p class="label">Figure</p>
+      <h2 class="slide-title">Study Selection Flow</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Study Selection Process</p>
+  <div style="display:flex;flex-direction:column;gap:12px;flex:1;">
+  <div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:140px;text-align:right;font-size:var(--type-small);">Records identified</span>
+  <div style="flex:1;position:relative;">
+    <div style="margin-left:0.0%;width:100.0%;height:48px;background:var(--c-primary);border-radius:8px;opacity:1.00;display:flex;align-items:center;justify-content:center;">
+      <span style="color:white;font-weight:600;font-size:var(--type-small);">2064</span>
+    </div>
+  </div>
+  
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:140px;text-align:right;font-size:var(--type-small);">Records screened</span>
+  <div style="flex:1;position:relative;">
+    <div style="margin-left:19.4%;width:61.3%;height:48px;background:var(--c-primary);border-radius:8px;opacity:0.85;display:flex;align-items:center;justify-content:center;">
+      <span style="color:white;font-weight:600;font-size:var(--type-small);">1265</span>
+    </div>
+  </div>
+  <span style="font-size:var(--type-label);color:var(--c-accent);white-space:nowrap;">&#8592; 799 duplicates</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:140px;text-align:right;font-size:var(--type-small);">Full-text reviewed</span>
+  <div style="flex:1;position:relative;">
+    <div style="margin-left:40.9%;width:18.2%;height:48px;background:var(--c-primary);border-radius:8px;opacity:0.70;display:flex;align-items:center;justify-content:center;">
+      <span style="color:white;font-weight:600;font-size:var(--type-small);">375</span>
+    </div>
+  </div>
+  
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:140px;text-align:right;font-size:var(--type-small);">Articles included</span>
+  <div style="flex:1;position:relative;">
+    <div style="margin-left:48.4%;width:3.3%;height:48px;background:var(--c-primary);border-radius:8px;opacity:0.55;display:flex;align-items:center;justify-content:center;">
+      <span style="color:white;font-weight:600;font-size:var(--type-small);">68</span>
+    </div>
+  </div>
+  <span style="font-size:var(--type-label);color:var(--c-accent);white-space:nowrap;">&#8592; 307 excluded</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:140px;text-align:right;font-size:var(--type-small);">User evaluations</span>
+  <div style="flex:1;position:relative;">
+    <div style="margin-left:47.7%;width:4.6%;height:48px;background:var(--c-primary);border-radius:8px;opacity:0.40;display:flex;align-items:center;justify-content:center;">
+      <span style="color:white;font-weight:600;font-size:var(--type-small);">94</span>
+    </div>
+  </div>
+  
+</div>
+</div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">PRISMA diagram illustrates the rigorous screening process that yielded the final dataset of 68 articles covering 94 real-world user evaluations.</p>
     </div>
     </div>
   </section>
 
-  <section data-label="04 Methods">
+  <section data-label="04 Figure">
     <div class="slide-pad" style="gap: var(--gap-title);">
-      <p class="label">Methods</p>
-      <h2 class="slide-title">Large-Scale Player Survey</h2>
-    <div style="display: flex; gap: 64px; flex: 1; align-items: center; margin-top: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
-      <p class="slide-body">174 active and former players reported 621 barriers across six categories.</p>
-      </div>
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
-        <figure style="max-width: 100%; text-align: center;">
-          <img src="/Users/qin/Apps/fastpub-py/examples/3772318.3790905/images/scene-3.png" alt="Large-Scale Player Survey" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);">
-        </figure>
-      </div>
+      <p class="label">Figure</p>
+      <h2 class="slide-title">Research Landscape at a Glance</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">Overview diagram summarizing geographic distribution, target behaviors, item retrieval methods and digital nudge types across the 68 articles.</p>
     </div>
     </div>
   </section>
 
-  <section data-label="05 Results">
+  <section data-label="05 Figure">
     <div class="slide-pad" style="gap: var(--gap-title);">
-      <p class="label">Results</p>
-      <h2 class="slide-title">60 Barriers Identified</h2>
-    <div style="display: flex; gap: 64px; flex: 1; align-items: center; margin-top: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
-      <p class="slide-body">21 barriers caused 77% of reports. Environmental and physical issues dominated console and VR play.</p>
-      </div>
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
-        <figure style="max-width: 100%; text-align: center;">
-          <img src="/Users/qin/Apps/fastpub-py/examples/3772318.3790905/images/scene-4.png" alt="60 Barriers Identified" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);">
-        </figure>
-      </div>
+      <p class="label">Figure</p>
+      <h2 class="slide-title">Recommender Systems vs Digital Nudges</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">RS vs Nudges Characteristics</p>
+  <div style="background:white;border-radius:16px;padding:24px 32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+    <div style="display:flex;align-items:center;gap:16px;padding-bottom:16px;border-bottom:2px solid var(--c-primary-light);"><div style="min-width:140px;"></div><div style="flex:1;text-align:center;font-weight:700;font-size:var(--type-body);color:var(--c-primary);">Recommender Systems</div><div style="flex:1;text-align:center;font-weight:700;font-size:var(--type-body);color:var(--c-primary);">Digital Nudges</div></div>
+    <div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(0,0,0,0.06);"><div style="min-width:140px;font-size:var(--type-small);color:var(--c-text-muted);">Nutrition focus</div><div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">53%</div><div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">16%</div></div>
+<div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(0,0,0,0.06);"><div style="min-width:140px;font-size:var(--type-small);color:var(--c-text-muted);">Personalization</div><div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">79%</div><div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">low</div></div>
+<div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(0,0,0,0.06);"><div style="min-width:140px;font-size:var(--type-small);color:var(--c-text-muted);">Mobile delivery</div><div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">40%</div><div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">40%</div></div>
+  </div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">Comparison of focus areas, personalization rates, and delivery methods between recommender systems (76%) and digital nudges (16%).</p>
     </div>
     </div>
   </section>
 
-  <section data-label="06 Impact">
+  <section data-label="06 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">Behaviors Addressed</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Health Behaviors Targeted</p>
+  <div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Nutrition</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:100.0%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">79%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Physical Activity</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:40.5%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">32%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Nutrition+PA</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:15.2%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">12%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Sedentary Behavior</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:1.3%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">1%</span>
+</div>
+  
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">79% of articles target nutrition, 32% target physical activity, only 1 article addresses sedentary behavior explicitly.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="07 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">System Types &amp; Combinations</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;align-items:center;gap:48px;flex:1;justify-content:center;">
+  <div style="flex-shrink:0;">
+    <svg width="240" height="240" viewBox="0 0 240 240">
+      <circle cx="120" cy="120" r="90" fill="none" stroke="#0d7c7f" stroke-width="35" stroke-dasharray="434.1 131.4" stroke-dashoffset="0.0" transform="rotate(-90 120 120)"/>
+<circle cx="120" cy="120" r="90" fill="none" stroke="#d97757" stroke-width="35" stroke-dasharray="91.4 474.1" stroke-dashoffset="-434.1" transform="rotate(-90 120 120)"/>
+<circle cx="120" cy="120" r="90" fill="none" stroke="#e4b94e" stroke-width="35" stroke-dasharray="17.1 548.4" stroke-dashoffset="-525.5" transform="rotate(-90 120 120)"/>
+<circle cx="120" cy="120" r="90" fill="none" stroke="#4ecdc4" stroke-width="35" stroke-dasharray="22.8 542.6" stroke-dashoffset="-542.6" transform="rotate(-90 120 120)"/>
+      <text x="120" y="112" text-anchor="middle" font-size="28" font-weight="700" fill="var(--c-text)">68</text><text x="120" y="138" text-anchor="middle" font-size="14" fill="var(--c-text-muted)">Articles</text>
+    </svg>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;flex:1;">
+    <p style="font-size:var(--type-small);font-weight:600;margin:0;">Intervention Types (n=68)</p>
+    <div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#0d7c7f;flex-shrink:0;"></span><span style="font-size:var(--type-label);">Recommender Systems (76)</span></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#d97757;flex-shrink:0;"></span><span style="font-size:var(--type-label);">Digital Nudges (16)</span></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#e4b94e;flex-shrink:0;"></span><span style="font-size:var(--type-label);">RS + Nudges (3)</span></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#4ecdc4;flex-shrink:0;"></span><span style="font-size:var(--type-label);">RS + Games (4)</span></div>
+    
+  </div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">76% recommender systems, 16% nudges, only 3% combined RS+nudges and 4% RS+games.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="08 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">Item Retrieval Methods</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Item Retrieval Transparency</p>
+  <div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Not described</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:100.0%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">46%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Content-based</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:19.6%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">9%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Hybrid</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:19.6%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">9%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Knowledge-based</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:15.2%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">7%</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">Collaborative</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:6.5%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">3%</span>
+</div>
+  
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">46% of articles did not describe item retrieval methods; content-based, collaborative, hybrid and knowledge-based approaches each used in &lt;10%.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="09 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">Geographic Distribution</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Country Income Level Representation</p>
+  <div style="display:flex;height:64px;border-radius:12px;overflow:hidden;">
+    <div style="width:65.0%;height:100%;background:#0d7c7f;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:var(--type-label);overflow:hidden;white-space:nowrap;">65%</div>
+<div style="width:21.0%;height:100%;background:#d97757;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:var(--type-label);overflow:hidden;white-space:nowrap;">21%</div>
+<div style="width:14.0%;height:100%;background:#e4b94e;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:var(--type-label);overflow:hidden;white-space:nowrap;">14%</div>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#0d7c7f;flex-shrink:0;"></span><span style="font-size:var(--type-label);">High-income (65)</span></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#d97757;flex-shrink:0;"></span><span style="font-size:var(--type-label);">Upper-middle (21)</span></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#e4b94e;flex-shrink:0;"></span><span style="font-size:var(--type-label);">Lower-middle (14)</span></div>
+  </div>
+  
+  <div style="background:var(--c-accent-light);border-left:4px solid var(--c-accent);border-radius:0 12px 12px 0;padding:16px 24px;">
+  <div style="font-size:var(--type-subtitle);font-weight:700;color:var(--c-accent);">0</div>
+  <div style="font-size:var(--type-label);color:var(--c-text-muted);">from low-income countries</div>
+</div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">65% of articles from 19 high-income countries; only 14% from lower-middle-income countries.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="10 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">Target vs Evaluated Populations</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Target Population Specification</p>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    <div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#d97757;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+<div style="width:40px;height:40px;border-radius:6px;background:#0d7c7f;"></div>
+  </div>
+  <div style="display:flex;gap:24px;">
+    <div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#d97757;"></span><span style="font-size:var(--type-label);">Target not specified (76%)</span></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border-radius:4px;background:#0d7c7f;"></span><span style="font-size:var(--type-label);">Target specified (24%)</span></div>
+  </div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">76% of articles did not specify target population; evaluations mostly conducted with adults 18-40 years.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="11 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">Evaluation Sample Sizes</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Sample Size Distribution (94 evaluations)</p>
+  <div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">0-10</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:58.3%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">7evals</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">11-20</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:100.0%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">12evals</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">21-30</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:75.0%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">9evals</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">31-50</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:58.3%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">7evals</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">51-100</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:75.0%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">9evals</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">101-300</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:66.7%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">8evals</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;">
+  <span style="min-width:180px;text-align:right;font-size:var(--type-small);white-space:nowrap;">300+</span>
+  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;position:relative;overflow:hidden;">
+    <div style="width:41.7%;height:100%;background:#0d7c7f;border-radius:8px;transition:width 0.6s;"></div>
+  </div>
+  <span style="min-width:80px;font-size:var(--type-small);font-weight:600;">5evals</span>
+</div>
+  
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">Majority of evaluations conducted with fewer than 50 participants; only a handful exceed 300.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="12 Dark">
+    <div class="slide-pad dark" style="gap: var(--gap-title);">
+      <p class="label">Dark</p>
+      <h2 class="slide-title">Summary Metrics</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Key Review Statistics</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+    <div class="stat-card">
+  <div class="stat-num" style="color:#0d7c7f;">68</div>
+  <div class="stat-label">Articles</div>
+  
+</div>
+<div class="stat-card">
+  <div class="stat-num" style="color:#0d7c7f;">94</div>
+  <div class="stat-label">Evaluations</div>
+  
+</div>
+<div class="stat-card">
+  <div class="stat-num" style="color:#0d7c7f;">68</div>
+  <div class="stat-label">Positive results</div>
+  
+</div>
+<div class="stat-card">
+  <div class="stat-num" style="color:#d97757;">79%</div>
+  <div class="stat-label">Personalization rate</div>
+  
+</div>
+  </div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">94 evaluations: 68 positive, 26 mixed/negative/no difference. 79% personalization rate among recommender systems.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="13 Content">
+    <div class="slide-pad" style="gap: var(--gap-title);">
+      <p class="label">Content</p>
+      <h2 class="slide-title">Critical Research Gaps</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">Priority Gaps</p>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+    <div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;gap:20px;align-items:flex-start;">
+  <div style="width:44px;height:44px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">1</div>
+  <div style="flex:1;">
+    <p style="margin:0;font-weight:600;font-size:var(--type-small);">Definitions</p>
+    <p style="margin:8px 0 0;font-size:var(--type-label);color:var(--c-text-muted);line-height:1.5;">No consistent definition of recommender systems or digital nudges in health</p>
+  </div>
+</div>
+<div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;gap:20px;align-items:flex-start;">
+  <div style="width:44px;height:44px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">2</div>
+  <div style="flex:1;">
+    <p style="margin:0;font-weight:600;font-size:var(--type-small);">Geography</p>
+    <p style="margin:8px 0 0;font-size:var(--type-label);color:var(--c-text-muted);line-height:1.5;">Zero studies from low-income countries</p>
+  </div>
+</div>
+<div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;gap:20px;align-items:flex-start;">
+  <div style="width:44px;height:44px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">3</div>
+  <div style="flex:1;">
+    <p style="margin:0;font-weight:600;font-size:var(--type-small);">Transparency</p>
+    <p style="margin:8px 0 0;font-size:var(--type-label);color:var(--c-text-muted);line-height:1.5;">46% fail to describe item retrieval methods</p>
+  </div>
+</div>
+<div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;gap:20px;align-items:flex-start;">
+  <div style="width:44px;height:44px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">4</div>
+  <div style="flex:1;">
+    <p style="margin:0;font-weight:600;font-size:var(--type-small);">Duration</p>
+    <p style="margin:8px 0 0;font-size:var(--type-label);color:var(--c-text-muted);line-height:1.5;">Only 27% report intervention length; few &gt;1 year</p>
+  </div>
+</div>
+  </div>
+</div>
+<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">Lack of standardized definitions, limited geographic diversity, poor reporting of methods, absence of long-term trials, and missing integration with policy-level approaches.</p>
+    </div>
+    </div>
+  </section>
+
+  <section data-label="14 Accent">
     <div class="slide-pad accent" style="gap: var(--gap-title);">
-      <p class="label">Impact</p>
-      <h2 class="slide-title">Design for Safety and Retention</h2>
-    <div style="display: flex; gap: 64px; flex: 1; align-items: center; margin-top: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
-      <p class="slide-body">Players cannot resolve social and mental barriers alone. Five concrete design directions are proposed.</p>
-      </div>
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
-        <figure style="max-width: 100%; text-align: center;">
-          <img src="/Users/qin/Apps/fastpub-py/examples/3772318.3790905/images/scene-5.png" alt="Design for Safety and Retention" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);">
-        </figure>
+      <p class="label">Accent</p>
+      <h2 class="slide-title">Future Directions</h2>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+      <div style="display: flex; flex-direction: column; gap: var(--gap-item);">
+          <div style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="color: var(--c-accent); font-size: 28px; line-height: 1; margin-top: 4px; flex-shrink: 0;">&#9679;</span>
+            <span style="font-size: var(--type-body); line-height: 1.5;">Standardize terminology and evaluation frameworks</span>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="color: var(--c-accent); font-size: 28px; line-height: 1; margin-top: 4px; flex-shrink: 0;">&#9679;</span>
+            <span style="font-size: var(--type-body); line-height: 1.5;">Conduct long-term RCTs with larger, diverse samples</span>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="color: var(--c-accent); font-size: 28px; line-height: 1; margin-top: 4px; flex-shrink: 0;">&#9679;</span>
+            <span style="font-size: var(--type-body); line-height: 1.5;">Combine RS + nudges and test in real-world settings</span>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="color: var(--c-accent); font-size: 28px; line-height: 1; margin-top: 4px; flex-shrink: 0;">&#9679;</span>
+            <span style="font-size: var(--type-body); line-height: 1.5;">Include low- and middle-income countries</span>
+          </div>
       </div>
     </div>
     </div>
   </section>
 
-  <section data-label="07 Summary">
+  <section data-label="15 Closing">
     <div class="slide-pad dark" style="justify-content: center; align-items: center; gap: 40px; text-align: center; position: relative; overflow: hidden;">
       <svg width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0;pointer-events:none;opacity:0.08;">
         <circle cx="300" cy="800" r="320" fill="none" stroke="var(--c-primary)" stroke-width="3"/>
@@ -2014,8 +2459,8 @@
         <rect x="100" y="100" width="300" height="300" rx="16" fill="none" stroke="var(--c-primary)" stroke-width="2" transform="rotate(-10 250 250)"/>
       </svg>
       <p class="label" style="font-size: var(--type-small);">Thank You</p>
-      <h2 class="slide-title" style="font-size: 56px; max-width: 1200px;">When Play Hurts</h2>
-      <p style="font-size: var(--type-body); color: rgba(255,255,255,0.5); margin: 0; max-width: 900px;">Sebastian Cmentowski, Sukran Karaosmanoglu, Frank Steinicke, Regina Bernhaupt</p>
+      <h2 class="slide-title" style="font-size: 56px; max-width: 1200px;">Digital Nudges + Recommenders: Untapped Potential</h2>
+      <p style="font-size: var(--type-body); color: rgba(255,255,255,0.5); margin: 0; max-width: 900px;">Combining digital nudges and recommender systems holds potential for obesity prevention, but rigorous interdisciplinary research with transparent reporting is urgently needed.</p>
     </div>
   </section>
 

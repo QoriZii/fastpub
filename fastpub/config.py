@@ -8,9 +8,6 @@ load_dotenv()
 XAI_API_KEY: str = os.environ.get("XAI_API_KEY", "")
 XAI_MODEL: str = os.environ.get("XAI_MODEL", "grok-3")
 
-# Image generation
-IMAGE_PROVIDER: str = os.environ.get("FASTPUB_IMAGE_PROVIDER", "xai")
-
 # Output directory
 OUTPUT_DIR: Path = Path(os.environ.get("FASTPUB_OUTDIR", "~/fastpub-output")).expanduser()
 

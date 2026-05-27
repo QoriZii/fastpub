@@ -8,7 +8,7 @@ import html
 from pathlib import Path
 from typing import Any
 
-from fastpub.models import PaperDocument, PaperFigure
+from fastpub.models import PaperDocument, PaperFigure, WebSection
 
 
 def render_web(doc: PaperDocument, zh: dict[str, Any], output_path: Path) -> Path:
@@ -24,34 +24,50 @@ def _esc(s: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Figure resolution — prefer generatedVisual over original when available
+# Figure resolution
 # ---------------------------------------------------------------------------
 
 def _resolved_figures(doc: PaperDocument) -> list[dict]:
-    gen_map = {v.for_figure_id: v for v in doc.generated_visuals}
     result = []
     for fig in doc.figures:
-        gen = gen_map.get(fig.id)
         result.append({
             "fig": fig,
-            "resolved_src": gen.src if gen else fig.src,
-            "is_generated": gen is not None,
+            "resolved_src": fig.src,
         })
     return result
 
 
 # ---------------------------------------------------------------------------
-# HTML generation — matches original fastpub output
+# Section labels and icons
+# ---------------------------------------------------------------------------
+
+_SECTION_LABELS = {
+    "problem": ("The Problem", "研究问题"),
+    "approach": ("The Approach", "研究方法"),
+    "meaning": ("Why It Matters", "研究意义"),
+    "result": ("Key Results", "主要结果"),
+    "limitation": ("Limitations", "局限性"),
+}
+
+_SECTION_ICONS = {
+    "problem": "&#x1F50D;",   # magnifying glass
+    "approach": "&#x2699;",    # gear
+    "meaning": "&#x1F4A1;",   # light bulb
+    "result": "&#x1F4CA;",    # bar chart
+    "limitation": "&#x26A0;",  # warning
+}
+
+
+# ---------------------------------------------------------------------------
+# HTML generation
 # ---------------------------------------------------------------------------
 
 def _build_html(doc: PaperDocument, zh: dict[str, Any]) -> str:
-    zh_figures = {f["id"]: f for f in zh.get("figures", [])}
-    figures = [f for f in _resolved_figures(doc) if f["fig"].usability != "skip"]
-    for f in figures:
-        f["zh"] = zh_figures.get(f["fig"].id, {})
-    zh_narr = zh.get("narrative", {})
     zh_meta = zh.get("meta", {})
-    zh_sections = zh.get("sections", [])
+    zh_hook = zh.get("hook", doc.hook)
+    zh_web_sections = {s.get("type", ""): s for s in zh.get("webSections", zh.get("web_sections", []))}
+    zh_figures = {f.get("id", ""): f for f in zh.get("figures", [])}
+    figures = [f for f in _resolved_figures(doc)]
 
     # Header
     venue_html = ""
@@ -64,27 +80,14 @@ def _build_html(doc: PaperDocument, zh: dict[str, Any]) -> str:
         tags = " ".join(f'<span class="tag">{_esc(k)}</span>' for k in doc.meta.keywords)
         keywords_html = f'  <p class="keywords">{tags}</p>'
 
-    # Narrative
-    narrative_cards = _narrative_card("Problem", "研究问题",
-                                      doc.narrative.problem, zh_narr.get("problem", ""))
-    narrative_cards += _narrative_card("Approach", "研究方法",
-                                       doc.narrative.approach, zh_narr.get("approach", ""))
-    narrative_cards += _narrative_card("Significance", "研究意义",
-                                       doc.narrative.significance, zh_narr.get("significance", ""))
-
-    # Results list
-    zh_results = zh_narr.get("results", [])
-    results_items = "\n      ".join(
-        f'<li><span class="en">{_esc(r)}</span>'
-        f'<span class="zh" hidden>{_esc(zh_results[i] if i < len(zh_results) else r)}</span></li>'
-        for i, r in enumerate(doc.narrative.results)
+    # Web sections
+    sections_html = "\n".join(
+        _build_section_html(s, zh_web_sections.get(s.type, {}))
+        for s in doc.web_sections
     )
 
-    # Sections
-    sections_html = "\n".join(_build_section_html(s, zh_sections) for s in doc.sections)
-
     # Figures
-    figures_html = _build_figures_html(figures) if figures else ""
+    figures_html = _build_figures_html(figures, zh_figures) if figures else ""
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -111,25 +114,11 @@ def _build_html(doc: PaperDocument, zh: dict[str, Any]) -> str:
 {keywords_html}
 </header>
 
-<section class="narrative">
+<section class="hook">
   <blockquote>
-    <span class="en">{_esc(doc.narrative.hook)}</span>
-    <span class="zh" hidden>{_esc(zh_narr.get("hook", doc.narrative.hook))}</span>
+    <span class="en">{_esc(doc.hook)}</span>
+    <span class="zh" hidden>{_esc(zh_hook)}</span>
   </blockquote>
-
-  <div class="narrative-grid">
-    {narrative_cards}
-  </div>
-
-  <div class="results">
-    <h3>
-      <span class="en">Key Results</span>
-      <span class="zh" hidden>主要成果</span>
-    </h3>
-    <ul>
-      {results_items}
-    </ul>
-  </div>
 </section>
 
 <section class="abstract">
@@ -156,49 +145,45 @@ def _build_html(doc: PaperDocument, zh: dict[str, Any]) -> str:
 </html>"""
 
 
-def _narrative_card(label: str, zh_label: str, en: str, zh_text: str) -> str:
-    return f"""<div class="card">
+def _build_section_html(s: WebSection, zh_s: dict) -> str:
+    en_label, zh_label = _SECTION_LABELS.get(s.type, (s.type.title(), s.type.title()))
+    zh_summary = zh_s.get("summary", s.summary)
+    zh_sub_issues = zh_s.get("subIssues", zh_s.get("sub_issues", []))
+
+    sub_items = []
+    for i, si in enumerate(s.sub_issues):
+        zh_si = zh_sub_issues[i] if i < len(zh_sub_issues) else {}
+        sub_items.append(f"""<div class="sub-issue">
       <h4>
-        <span class="en">{label}</span>
-        <span class="zh" hidden>{zh_label}</span>
+        <span class="en">{_esc(si.title)}</span>
+        <span class="zh" hidden>{_esc(zh_si.get("title", si.title))}</span>
       </h4>
       <p>
-        <span class="en">{_esc(en)}</span>
-        <span class="zh" hidden>{_esc(zh_text)}</span>
+        <span class="en">{_esc(si.description)}</span>
+        <span class="zh" hidden>{_esc(zh_si.get("description", si.description))}</span>
       </p>
-    </div>
-    """
+    </div>""")
 
+    sub_html = "\n    ".join(sub_items)
 
-def _build_section_html(s, zh_sections: list[dict]) -> str:
-    zh_s = next((zs for zs in zh_sections if zs.get("id") == s.id), {})
-    zh_key_points = zh_s.get("keyPoints", zh_s.get("key_points", []))
-    importance_class = " low-importance" if s.importance == "low" else ""
-
-    key_points_html = "\n    ".join(
-        f'<li><span class="en">{_esc(kp)}</span>'
-        f'<span class="zh" hidden>{_esc(zh_key_points[i] if i < len(zh_key_points) else kp)}</span></li>'
-        for i, kp in enumerate(s.key_points)
-    )
-
-    return f"""<section class="paper-section{importance_class}">
+    return f"""<section class="web-section section-{s.type}">
   <h2>
-    <span class="en">{_esc(s.title)}</span>
-    <span class="zh" hidden>{_esc(zh_s.get("title", s.title))}</span>
+    <span class="en">{en_label}</span>
+    <span class="zh" hidden>{zh_label}</span>
     <span class="badge badge-{s.type}">{s.type}</span>
   </h2>
-  <p>
+  <p class="section-summary">
     <span class="en">{_esc(s.summary)}</span>
-    <span class="zh" hidden>{_esc(zh_s.get("summary", s.summary))}</span>
+    <span class="zh" hidden>{_esc(zh_summary)}</span>
   </p>
-  <ul>
-    {key_points_html}
-  </ul>
+  <div class="sub-issues">
+    {sub_html}
+  </div>
 </section>"""
 
 
-def _build_figures_html(figures: list[dict]) -> str:
-    items = "\n    ".join(_figure_item(f) for f in figures)
+def _build_figures_html(figures: list[dict], zh_figures: dict) -> str:
+    items = "\n    ".join(_figure_item(f, zh_figures) for f in figures)
     return f"""<section class="figures">
   <h2>
     <span class="en">Figures</span>
@@ -210,22 +195,21 @@ def _build_figures_html(figures: list[dict]) -> str:
 </section>"""
 
 
-def _figure_item(f: dict) -> str:
+def _figure_item(f: dict, zh_figures: dict) -> str:
     fig: PaperFigure = f["fig"]
-    zh_fig: dict = f.get("zh", {})
     src = f["resolved_src"]
-    ai_badge = '\n      <span class="ai-badge">Simplified</span>' if f["is_generated"] else ""
+    zh_fig = zh_figures.get(fig.id, {})
     zh_caption = zh_fig.get("caption", fig.caption)
-    zh_ai_desc = zh_fig.get("aiDescription", zh_fig.get("ai_description", fig.ai_description))
+    zh_desc = zh_fig.get("aiDescription", fig.ai_description)
     return f"""<figure>
-      <img src="{src}" alt="{_esc(fig.ai_description)}" loading="lazy">{ai_badge}
+      <img src="{src}" alt="{_esc(fig.ai_description)}" loading="lazy">
       <figcaption>
         <strong>{_esc(fig.id)}</strong>
         <span class="en">{_esc(fig.caption)}</span>
         <span class="zh" hidden>{_esc(zh_caption)}</span>
         <p class="ai-desc">
           <span class="en">{_esc(fig.ai_description)}</span>
-          <span class="zh" hidden>{_esc(zh_ai_desc)}</span>
+          <span class="zh" hidden>{_esc(zh_desc)}</span>
         </p>
       </figcaption>
     </figure>"""
@@ -271,42 +255,41 @@ def _build_styles() -> str:
   }
   .lang-toggle button.active { background: var(--accent); color: #fff; }
 
-  .narrative blockquote {
+  .hook blockquote {
     font-size: 1.2rem; font-style: italic; border-left: 4px solid var(--accent);
     padding: 0.75rem 1rem; margin: 1.5rem 0; background: var(--card-bg);
     border-radius: 0 8px 8px 0;
   }
-  .narrative-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem; margin: 1.5rem 0;
-  }
-  .card {
-    background: var(--card-bg); border: 1px solid var(--border);
-    border-radius: 8px; padding: 1rem;
-  }
-  .card h4 { color: var(--accent); margin-bottom: 0.4rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
-  .results { margin: 1.5rem 0; }
-  .results h3 { margin-bottom: 0.5rem; }
-  .results ul { padding-left: 1.5rem; }
-  .results li { margin-bottom: 0.3rem; }
-
-  .abstract, .paper-section, .figures { margin: 2rem 0; }
+  .abstract, .web-section, .figures { margin: 2rem 0; }
   h2 { font-size: 1.3rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   .badge {
     font-size: 0.65rem; padding: 0.15rem 0.45rem; border-radius: 4px;
     text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em;
   }
   .badge-problem { background: #fecaca; color: #991b1b; }
-  .badge-method { background: #bfdbfe; color: #1e40af; }
-  .badge-experiment { background: #fde68a; color: #92400e; }
+  .badge-approach { background: #bfdbfe; color: #1e40af; }
+  .badge-meaning { background: #e9d5ff; color: #6b21a8; }
   .badge-result { background: #bbf7d0; color: #166534; }
-  .badge-discussion { background: #e9d5ff; color: #6b21a8; }
-  .badge-other { background: var(--border); color: var(--muted); }
+  .badge-limitation { background: #fde68a; color: #92400e; }
 
-  .low-importance { opacity: 0.7; }
-  .paper-section ul { padding-left: 1.5rem; margin-top: 0.5rem; }
-  .paper-section li { margin-bottom: 0.25rem; }
+  .section-summary {
+    font-size: 1rem; line-height: 1.7; margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  .sub-issues {
+    display: grid; grid-template-columns: 1fr; gap: 0.75rem;
+  }
+  .sub-issue {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.75rem 1rem;
+  }
+  .sub-issue h4 {
+    font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem;
+    color: var(--accent);
+  }
+  .sub-issue p { font-size: 0.85rem; color: var(--fg); line-height: 1.6; }
 
   .figure-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
   figure { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }

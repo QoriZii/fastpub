@@ -2,18 +2,23 @@
 
 Transform academic papers into promotional multimedia materials.
 
-FastPub takes a research paper (PDF) and generates accessible, audience-friendly outputs: bilingual web pages, narrated slide decks, and short-form explainer videos.
+FastPub takes a research paper (PDF) and generates accessible, audience-friendly outputs: bilingual web pages and data-rich slide decks.
 
 ## Install
 
 ```bash
 git clone <repo-url> && cd fastpub-py
+make setup          # installs Python dependencies
+```
+
+Or manually:
+
+```bash
 uv sync
 ```
 
 Requirements:
 - Python >= 3.11
-- ffmpeg (only for video rendering): `brew install ffmpeg`
 
 ## Quick Start
 
@@ -53,15 +58,13 @@ Generate output from a PaperDocument.
 ```bash
 uv run fastpub render paper.analysis.json -f web
 uv run fastpub render paper.analysis.json -f slides
-uv run fastpub render paper.analysis.json -f video
-uv run fastpub render paper.analysis.json -f web,slides,video
+uv run fastpub render paper.analysis.json -f web,slides
 ```
 
 Options:
-- `-f, --format <formats>` — Comma-separated: `web`, `slides`, `video` (default: `web`)
+- `-f, --format <formats>` — Comma-separated: `web`, `slides` (default: `web`)
 - `-o, --output <path>` — Output path
-- `--voice <voice-id>` — TTS voice: `eve`, `ara`, `rex`, `sal`, `leo`
-- `--no-audio` — Skip narration generation
+- `--aspect <ratio>` — Slide aspect ratio: `4:3` (default) or `16:9`
 
 ### `fastpub go <pdf>`
 
@@ -91,7 +94,6 @@ cp .env.example .env
 | `XAI_API_KEY` | xAI API key | `xai-...` |
 | `XAI_MODEL` | Model ID | `grok-3` |
 | `FASTPUB_OUTDIR` | Default output directory | `~/fastpub-output` |
-| `LOG_LEVEL` | Log verbosity | `debug`, `info`, `warn`, `error` |
 
 ## Output Formats
 
@@ -100,24 +102,23 @@ cp .env.example .env
 Self-contained bilingual HTML page with:
 - English/Chinese language toggle
 - Responsive layout with dark mode
-- Narrative cards, section summaries, figure gallery
+- 5 structured sections (Problem, Approach, Meaning, Results, Limitations)
 - No external dependencies — single `.html` file
 
 ### Slides (`-f slides`)
 
-PowerPoint file (`.pptx`) — not yet implemented.
-
-### Video (`-f video`)
-
-MP4 explainer video — not yet implemented.
+HTML slide deck with:
+- Data-rich visualizations (bar charts, donut charts, funnels, stat cards, etc.)
+- Narrative story arc from problem to conclusions
+- Speaker notes
+- Configurable aspect ratio (`--aspect 4:3` or `16:9`)
 
 ## Pipeline Architecture
 
 ```
 PDF → Parse (pymupdf) → Analyze (xAI LLM) → [Edit] → Render
                                                   ├── Web (HTML)
-                                                  ├── Slides (PPTX)
-                                                  └── Video (MP4)
+                                                  └── Slides (HTML)
 ```
 
 The canonical `analysis.json` (PaperDocument) sits at the center. Edit it between analyze and render to fine-tune outputs.
@@ -132,15 +133,13 @@ fastpub/
 ├── pipeline/
 │   ├── utils.py            # xAI client, JSON parsing
 │   ├── parse_pdf.py        # PDF extraction (pymupdf)
-│   ├── analyze.py          # LLM paper analysis
+│   ├── analyze.py          # LLM paper analysis (web + slides)
 │   └── translate.py        # LLM Chinese translation
 ├── prompts/                # Prompt templates (.txt)
 ├── render/
-│   ├── web.py              # HTML renderer
-│   ├── slides.py           # PPTX renderer (stub)
-│   ├── video.py            # Video renderer (stub)
+│   ├── web.py              # Bilingual HTML renderer
+│   ├── slides.py           # Slide deck renderer (12 viz types)
 │   └── templates/          # HTML templates
-└── ai/tts.py               # xAI TTS client
 ```
 
 ## Development

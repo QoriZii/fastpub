@@ -67,7 +67,8 @@ def analyze(
     doc.save(out_path)
 
     typer.echo(f"\nDone! \"{doc.meta.title}\"")
-    typer.echo(f"  Sections: {len(doc.sections)}")
+    typer.echo(f"  Web sections: {len(doc.web_sections)}")
+    typer.echo(f"  Slides: {len(doc.slides)}")
     typer.echo(f"  Figures: {len(doc.figures)}")
     typer.echo(f"  Output: {out_path}")
 
@@ -77,12 +78,9 @@ def analyze(
 @app.command()
 def render(
     analysis: Path = typer.Argument(..., help="Path to analysis.json"),
-    format: str = typer.Option("web", "-f", "--format", help="Comma-separated: web, slides, video"),
+    format: str = typer.Option("web", "-f", "--format", help="Comma-separated: web, slides"),
     output: Optional[Path] = typer.Option(None, "-o", "--output", help="Output path"),
     aspect: str = typer.Option("4:3", "--aspect", help="Slide aspect ratio: 4:3 | 16:9"),
-    voice: Optional[str] = typer.Option(None, "--voice", help="TTS voice: eve, ara, rex, sal, leo"),
-    no_audio: bool = typer.Option(False, "--no-audio", help="Skip audio generation"),
-    image_provider: Optional[str] = typer.Option(None, "--image-provider", help="Image generation provider: xai"),
 ):
     """Render analysis.json into output format(s)."""
     from fastpub.models import PaperDocument
@@ -113,15 +111,8 @@ def render(
                 from fastpub.render.slides import render_slides
 
                 out_path = output or out_dir / f"{base_name}.slides.html"
-                result = render_slides(doc, out_path, no_audio=no_audio, aspect=aspect, image_provider=image_provider)
+                result = render_slides(doc, out_path, aspect=aspect)
                 typer.echo(f"  Slides: {result}")
-
-            case "video":
-                from fastpub.render.video import render_video
-
-                out_path = output or out_dir / f"{base_name}.mp4"
-                result = render_video(doc, out_path, no_audio=no_audio, image_provider=image_provider, voice=voice or "sal")
-                typer.echo(f"  Video: {result}")
 
             case _:
                 typer.echo(f"Unknown format: {fmt}", err=True)
@@ -133,14 +124,11 @@ def render(
 @app.command()
 def go(
     pdf: Path = typer.Argument(..., help="Path to PDF file"),
-    format: str = typer.Option("web", "-f", "--format", help="Comma-separated: web, slides, video"),
+    format: str = typer.Option("web", "-f", "--format", help="Comma-separated: web, slides"),
     output: Optional[Path] = typer.Option(None, "-o", "--output", help="Output directory"),
     parser: str = typer.Option("pymupdf", "-p", "--parser", help="PDF parser: pymupdf | mineru | mineru-cloud"),
     audience: str = typer.Option("academic", "--audience", help="Target audience: academic | general"),
     aspect: str = typer.Option("4:3", "--aspect", help="Slide aspect ratio: 4:3 | 16:9"),
-    voice: Optional[str] = typer.Option(None, "--voice", help="TTS voice: eve, ara, rex, sal, leo"),
-    no_audio: bool = typer.Option(False, "--no-audio", help="Skip audio generation"),
-    image_provider: Optional[str] = typer.Option(None, "--image-provider", help="Image generation provider: xai"),
 ):
     """One-shot: analyze + render without manual editing."""
     from fastpub.pipeline.parse_pdf import parse_pdf
@@ -181,13 +169,8 @@ def go(
 
             case "slides":
                 from fastpub.render.slides import render_slides
-                result = render_slides(doc, out_dir / f"{base_name}.slides.html", no_audio=no_audio, aspect=aspect, image_provider=image_provider)
+                result = render_slides(doc, out_dir / f"{base_name}.slides.html", aspect=aspect)
                 typer.echo(f"  Slides: {result}")
-
-            case "video":
-                from fastpub.render.video import render_video
-                result = render_video(doc, out_dir / f"{base_name}.mp4", no_audio=no_audio, image_provider=image_provider, voice=voice or "sal")
-                typer.echo(f"  Video: {result}")
 
             case _:
                 typer.echo(f"Unknown format: {fmt}", err=True)

@@ -105,6 +105,7 @@ class SlideSpec:
     id: str
     layout: str            # title | section_header | content | figure | two_column | closing
     title: str
+    section: str = ""      # e.g. "Context", "Methods", "Results", "Discussion"
     subtitle: str = ""
     bullets: list[str] = field(default_factory=list)
     explanation: str = ""  # what this slide shows and why it matters
@@ -119,6 +120,7 @@ class SlideSpec:
             id=d.get("id", ""),
             layout=d.get("layout", "content"),
             title=d.get("title", ""),
+            section=d.get("section", ""),
             subtitle=d.get("subtitle", ""),
             bullets=d.get("bullets", []),
             explanation=d.get("explanation", ""),
@@ -135,6 +137,7 @@ class PaperDocument:
     web_sections: list[WebSection] = field(default_factory=list)
     figures: list[PaperFigure] = field(default_factory=list)
     slides: list[SlideSpec] = field(default_factory=list)
+    zh: dict = field(default_factory=dict)
 
     # ── Serialisation ──────────────────────────────────────────────
 
@@ -156,6 +159,7 @@ class PaperDocument:
             ],
             figures=[PaperFigure.from_dict(f) for f in raw.get("figures", [])],
             slides=[SlideSpec.from_dict(s) for s in raw.get("slides", [])],
+            zh=raw.get("zh", {}),
         )
 
     @staticmethod

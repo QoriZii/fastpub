@@ -7,9 +7,10 @@ rail, and print-to-PDF.
 from __future__ import annotations
 
 import html
+import json
 from pathlib import Path
 
-from fastpub.models import PaperDocument, PaperFigure, SlideSpec, VisualizationData
+from fastpub.models import PaperDocument, SlideSpec, VisualizationData
 from fastpub.render.theme import WARM_SERIF, build_slide_css, font_import_tag
 
 
@@ -17,6 +18,9 @@ _ASPECT_RATIOS = {
     "4:3":  (1440, 1080),
     "16:9": (1920, 1080),
 }
+
+_CHART_COLORS = WARM_SERIF.chart_colors
+_NUM_CHART_COLORS = len(_CHART_COLORS)
 
 
 def render_slides(
@@ -49,7 +53,8 @@ class _Slide:
     __slots__ = (
         "slide_type", "title", "bullets", "body",
         "figure_src", "figure_caption",
-        "stats", "narration", "label", "body_is_html",
+        "narration", "label", "body_is_html",
+        "explanation", "viz_type",
     )
 
     def __init__(
@@ -60,10 +65,11 @@ class _Slide:
         body: str = "",
         figure_src: str | None = None,
         figure_caption: str | None = None,
-        stats: list[tuple[str, str]] | None = None,
         narration: str = "",
         label: str = "",
         body_is_html: bool = False,
+        explanation: str = "",
+        viz_type: str = "",
     ):
         self.slide_type = slide_type
         self.title = title
@@ -71,17 +77,12 @@ class _Slide:
         self.body = body
         self.figure_src = figure_src
         self.figure_caption = figure_caption
-        self.stats = stats or []
         self.narration = narration
         self.label = label
         self.body_is_html = body_is_html
+        self.explanation = explanation
+        self.viz_type = viz_type
 
-
-def _resolved_figure_map(doc: PaperDocument) -> dict[str, tuple[str, str]]:
-    result = {}
-    for fig in doc.figures:
-        result[fig.id] = (fig.src, fig.caption)
-    return result
 
 
 def _build_slides(doc: PaperDocument) -> list[_Slide]:
@@ -155,11 +156,10 @@ def _slides_from_specs(doc: PaperDocument) -> list[_Slide]:
 
         # Build body from visualization HTML if available
         viz_html = ""
+        viz_type_name = ""
         if viz:
             viz_html = _render_visualization(viz)
-            # Add explanation as caption below the viz
-            if spec.explanation:
-                viz_html += f'\n<p style="font-size:var(--type-small);color:var(--c-text-muted);margin-top:16px;line-height:1.4;">{_esc(spec.explanation)}</p>'
+            viz_type_name = viz.viz_type
 
         # For non-viz slides, use explanation as body text
         body = viz_html if viz_html else spec.explanation
@@ -172,8 +172,10 @@ def _slides_from_specs(doc: PaperDocument) -> list[_Slide]:
             figure_src=fig_src if not viz_html else None,
             figure_caption=fig_caption,
             narration=spec.narrative,
-            label=spec.layout.replace("_", " ").title(),
+            label=spec.section or spec.layout.replace("_", " ").title(),
             body_is_html=bool(viz_html),
+            explanation=spec.explanation if viz_html else "",
+            viz_type=viz_type_name,
         ))
 
     return slides
@@ -183,33 +185,68 @@ def _slides_from_specs(doc: PaperDocument) -> list[_Slide]:
 # Visualization renderers
 # ---------------------------------------------------------------------------
 
+_VIZ_RENDERERS: dict | None = None
+
+
 def _render_visualization(viz: VisualizationData) -> str:
     """Dispatch to the appropriate visualization renderer."""
-    renderers = {
-        "bar_chart": _render_bar_chart,
-        "stat_card": _render_stat_card,
-        "donut_chart": _render_donut_chart,
-        "comparison": _render_comparison,
-        "funnel": _render_funnel,
-        "steps": _render_steps,
-        "proportion": _render_proportion,
-        "flow": _render_flow,
-        "area_blocks": _render_area_blocks,
-        "stacked_bar": _render_stacked_bar,
-        "card_grid": _render_card_grid,
-        "two_panel": _render_two_panel,
-    }
-    renderer = renderers.get(viz.viz_type)
+    global _VIZ_RENDERERS
+    if _VIZ_RENDERERS is None:
+        _VIZ_RENDERERS = {
+            "bar_chart": _render_bar_chart,
+            "stat_card": _render_stat_card,
+            "donut_chart": _render_donut_chart,
+            "comparison": _render_comparison,
+            "funnel": _render_funnel,
+            "steps": _render_steps,
+            "proportion": _render_proportion,
+            "flow": _render_flow,
+            "area_blocks": _render_area_blocks,
+            "stacked_bar": _render_stacked_bar,
+            "card_grid": _render_card_grid,
+            "two_panel": _render_two_panel,
+        }
+    renderer = _VIZ_RENDERERS.get(viz.viz_type)
     if not renderer:
         return ""
     return renderer(viz.title, viz.data)
+
+
+# ---------------------------------------------------------------------------
+# Shared viz helpers
+# ---------------------------------------------------------------------------
+
+def _viz_title(title: str) -> str:
+    return f'<p class="viz-title">{_esc(title)}</p>'
+
+
+def _swatch(label: str, color: str) -> str:
+    return f'<div class="viz-swatch" style="--swatch-color:{color};"><span>{_esc(label)}</span></div>'
+
+
+def _chart_color(index: int) -> str:
+    return _CHART_COLORS[index % _NUM_CHART_COLORS]
+
+
+def _fmt_num(num) -> str:
+    """Format a number as zero-padded two digits (01, 02) or pass through."""
+    if isinstance(num, (int, float)) or (isinstance(num, str) and num.isdigit()):
+        return f"{int(num):02d}"
+    return str(num)
+
+
+def _callout(title: str, text: str) -> str:
+    if not title:
+        return ""
+    text_html = f'<div class="viz-callout-text">{_esc(text)}</div>' if text else ""
+    return f'<div class="viz-callout"><div class="viz-callout-title">{_esc(title)}</div>{text_html}</div>'
 
 
 def _render_bar_chart(title: str, data: dict) -> str:
     labels = data.get("labels", [])
     values = data.get("values", [])
     unit = _esc(data.get("unit", ""))
-    color = data.get("color", "var(--c-primary)")
+    color = "var(--c-primary)"
     if not labels or not values:
         return ""
     max_val = max(values) if values else 1
@@ -217,26 +254,31 @@ def _render_bar_chart(title: str, data: dict) -> str:
     bars = []
     for label, val in zip(labels, values):
         pct = (val / max_val * 100) if max_val else 0
-        bars.append(f"""<div style="display:flex;align-items:center;gap:16px;">
-  <span style="min-width:220px;text-align:right;font-size:var(--type-small);white-space:nowrap;">{_esc(str(label))}</span>
-  <div style="flex:1;background:var(--c-primary-light);border-radius:12px;height:64px;position:relative;overflow:hidden;">
-    <div style="width:{pct:.1f}%;height:100%;background:{color};border-radius:12px;transition:width 0.6s;"></div>
+        bars.append(f"""<div class="bar-row">
+  <span class="bar-label">{_esc(str(label))}</span>
+  <div class="viz-bar-track">
+    <div class="viz-bar-fill" style="width:{pct:.1f}%;background:{color};"></div>
   </div>
-  <span style="min-width:100px;font-size:var(--type-small);font-weight:600;">{val}{unit}</span>
+  <span class="bar-value">{val} {unit}</span>
 </div>""")
 
-    callout = data.get("callout")
-    callout_html = ""
-    if callout:
-        callout_html = f"""<div style="background:var(--c-accent-light);border-left:4px solid var(--c-accent);border-radius:0 12px 12px 0;padding:16px 24px;margin-top:8px;">
-  <div style="font-size:var(--type-small);font-weight:700;color:var(--c-accent);">{_esc(str(callout.get("title", "")))}</div>
-  <div style="font-size:var(--type-label);color:var(--c-text-muted);">{_esc(callout.get("text", ""))}</div>
+    co = data.get("callout")
+    callout_html = _callout(co.get("title", ""), co.get("text", "")) if co else ""
+
+    if callout_html:
+        return f"""<div class="viz">
+  {_viz_title(title)}
+  <div class="split">
+    <div class="flex-col" style="flex:1;">
+      {chr(10).join(bars)}
+    </div>
+    {callout_html}
+  </div>
 </div>"""
 
-    return f"""<div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
+    return f"""<div class="viz">
+  {_viz_title(title)}
   {chr(10).join(bars)}
-  {callout_html}
 </div>"""
 
 
@@ -244,24 +286,24 @@ def _render_stat_card(title: str, data: dict) -> str:
     stats = data.get("stats", [])
     if not stats:
         return ""
-    cards = []
-    for s in stats:
+    items = []
+    for i, s in enumerate(stats):
         delta_html = ""
         if s.get("delta"):
-            delta_color = "#16a34a" if s["delta"].startswith("+") else "#dc2626"
-            delta_html = f'<span style="font-size:var(--type-label);color:{delta_color};font-weight:500;">{_esc(s["delta"])}</span>'
-        stat_color = s.get("color", "var(--c-primary)")
-        cards.append(f"""<div class="stat-card">
-  <div class="stat-num" style="color:{stat_color};">{_esc(str(s.get("value", "")))}</div>
+            delta_color = "var(--c-delta-pos)" if s["delta"].startswith("+") else "var(--c-delta-neg)"
+            delta_html = f' <span style="font-size:var(--type-small);color:{delta_color};font-weight:500;">{_esc(s["delta"])}</span>'
+        # Alternate primary/accent colors for visual variety — ignore LLM color overrides
+        stat_color = "var(--c-primary)" if i % 2 == 0 else "var(--c-accent)"
+        items.append(f"""<div class="stat-item">
+  <div class="stat-num" style="color:{stat_color};">{_esc(str(s.get("value", "")))}{delta_html}</div>
   <div class="stat-label">{_esc(s.get("label", ""))}</div>
-  {delta_html}
 </div>""")
 
-    cols = min(len(stats), 3)
-    return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  <div style="display:grid;grid-template-columns:repeat({cols},1fr);gap:24px;">
-    {chr(10).join(cards)}
+    cols = min(len(stats), 4)
+    return f"""<div class="viz" style="justify-content:flex-end;">
+  {_viz_title(title)}
+  <div style="display:grid;grid-template-columns:repeat({cols},1fr);gap:32px;">
+    {chr(10).join(items)}
   </div>
 </div>"""
 
@@ -281,13 +323,11 @@ def _render_donut_chart(title: str, data: dict) -> str:
     circumference = 2 * 3.14159 * r
     paths = []
     offset = 0
-    default_colors = WARM_SERIF.chart_colors
-
     for i, seg in enumerate(segments):
         pct = seg["value"] / total
         dash = pct * circumference
         gap = circumference - dash
-        color = seg.get("color", default_colors[i % len(default_colors)])
+        color = _chart_color(i)
         paths.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="{stroke_width}" stroke-dasharray="{dash:.1f} {gap:.1f}" stroke-dashoffset="{-offset:.1f}" transform="rotate(-90 {cx} {cy})"/>')
         offset += dash
 
@@ -295,12 +335,9 @@ def _render_donut_chart(title: str, data: dict) -> str:
     center_value = data.get("centerValue", "")
     center_html = ""
     if center_value:
-        center_html = f'<text x="{cx}" y="{cy-12}" text-anchor="middle" font-size="44" font-weight="700" fill="var(--c-text)">{_esc(str(center_value))}</text><text x="{cx}" y="{cy+28}" text-anchor="middle" font-size="22" fill="var(--c-text-muted)">{_esc(center_label)}</text>'
+        center_html = f'<text x="{cx}" y="{cy-16}" text-anchor="middle" font-size="56" font-weight="700" fill="var(--c-text)">{_esc(str(center_value))}</text><text x="{cx}" y="{cy+32}" text-anchor="middle" font-size="28" fill="var(--c-text)">{_esc(center_label)}</text>'
 
-    legend_items = []
-    for i, seg in enumerate(segments):
-        color = seg.get("color", default_colors[i % len(default_colors)])
-        legend_items.append(f'<div style="display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border-radius:4px;background:{color};flex-shrink:0;"></span><span style="font-size:var(--type-small);">{_esc(seg["label"])} ({seg["value"]})</span></div>')
+    legend_items = [_swatch(f'{seg["label"]} ({seg["value"]})', _chart_color(i)) for i, seg in enumerate(segments)]
 
     # Side bars if provided
     side_bars = data.get("sideBars", [])
@@ -310,25 +347,27 @@ def _render_donut_chart(title: str, data: dict) -> str:
         sb_items = []
         for sb in side_bars:
             sb_pct = (sb["value"] / sb_max * 100) if sb_max else 0
-            sb_items.append(f"""<div style="display:flex;align-items:center;gap:16px;">
-  <span style="min-width:140px;font-size:var(--type-small);text-align:right;">{_esc(sb.get("label", ""))}</span>
-  <div style="flex:1;background:var(--c-primary-light);border-radius:8px;height:44px;overflow:hidden;">
-    <div style="width:{sb_pct:.1f}%;height:100%;background:var(--c-primary);border-radius:8px;"></div>
+            sb_items.append(f"""<div class="bar-row" style="grid-template-columns:140px 1fr auto;">
+  <span class="bar-label">{_esc(sb.get("label", ""))}</span>
+  <div class="viz-bar-track" style="height:44px;">
+    <div class="viz-bar-fill" style="width:{sb_pct:.1f}%;background:var(--c-primary);"></div>
   </div>
-  <span style="font-size:var(--type-small);font-weight:600;min-width:50px;">{sb["value"]}</span>
+  <span class="bar-value" style="min-width:50px;">{sb["value"]}</span>
 </div>""")
-        side_bars_html = f'<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">{chr(10).join(sb_items)}</div>'
+        side_bars_html = f'<div class="flex-col" style="gap:8px;margin-top:16px;">{chr(10).join(sb_items)}</div>'
 
-    return f"""<div style="display:flex;align-items:center;gap:48px;flex:1;justify-content:center;">
+    svg_title = f'{_esc(title)} — ' + ', '.join(f'{s["label"]}: {s["value"]}' for s in segments)
+    return f"""<div class="split" style="justify-content:center;">
   <div style="flex-shrink:0;">
-    <svg width="400" height="400" viewBox="0 0 400 400">
+    <svg width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="{_esc(svg_title)}">
+      <title>{_esc(svg_title)}</title>
       {chr(10).join(paths)}
       {center_html}
     </svg>
   </div>
-  <div style="display:flex;flex-direction:column;gap:12px;flex:1;">
-    <p style="font-size:var(--type-small);font-weight:600;margin:0;">{_esc(title)}</p>
-    {chr(10).join(legend_items)}
+  <div class="flex-col" style="gap:12px;flex:1;">
+    {_viz_title(title)}
+    <div class="viz-legend" style="flex-direction:column;">{chr(10).join(legend_items)}</div>
     {side_bars_html}
   </div>
 </div>"""
@@ -346,25 +385,25 @@ def _render_comparison(title: str, data: dict) -> str:
             if k not in all_keys:
                 all_keys.append(k)
 
-    header = '<div style="min-width:140px;"></div>' + "".join(
-        f'<div style="flex:1;text-align:center;font-weight:700;font-size:var(--type-body);color:var(--c-primary);">{_esc(item.get("name", ""))}</div>'
+    header_cells = "<th></th>" + "".join(
+        f'<th style="text-align:center;">{_esc(item.get("name", ""))}</th>'
         for item in items
     )
 
     rows = []
     for key in all_keys:
-        cells = f'<div style="min-width:140px;font-size:var(--type-small);color:var(--c-text-muted);">{_esc(key)}</div>'
+        cells = f'<td>{_esc(key)}</td>'
         for item in items:
-            val = item.get("metrics", {}).get(key, "—")
-            cells += f'<div style="flex:1;text-align:center;font-size:var(--type-body);font-weight:500;">{_esc(str(val))}</div>'
-        rows.append(f'<div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(0,0,0,0.06);">{cells}</div>')
+            val = item.get("metrics", {}).get(key, "\u2014")
+            cells += f'<td style="text-align:center;">{_esc(str(val))}</td>'
+        rows.append(f'<tr>{cells}</tr>')
 
-    return f"""<div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  <div style="background:white;border-radius:16px;padding:24px 32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-    <div style="display:flex;align-items:center;gap:16px;padding-bottom:16px;border-bottom:2px solid var(--c-primary-light);">{header}</div>
-    {chr(10).join(rows)}
-  </div>
+    return f"""<div class="viz">
+  {_viz_title(title)}
+  <table class="viz-table">
+    <thead><tr>{header_cells}</tr></thead>
+    <tbody>{chr(10).join(rows)}</tbody>
+  </table>
 </div>"""
 
 
@@ -372,52 +411,37 @@ def _render_funnel(title: str, data: dict) -> str:
     stages = data.get("stages", [])
     if not stages:
         return ""
-    max_val = stages[0].get("value", 1)
-    if max_val == 0:
-        max_val = 1
 
-    bars = []
+    parts = []
     for i, stage in enumerate(stages):
-        pct = stage["value"] / max_val * 100
-        margin = (100 - pct) / 2
+        is_last = i == len(stages) - 1
+        final_cls = " funnel-final" if is_last else ""
         excluded = stage.get("excluded", "")
-        excl_html = ""
-        if excluded:
-            excl_html = f'<span style="font-size:var(--type-label);color:var(--c-accent);white-space:nowrap;">&#8592; {_esc(str(excluded))}</span>'
-        bars.append(f"""<div style="display:flex;align-items:center;gap:16px;">
-  <span style="min-width:140px;text-align:right;font-size:var(--type-small);">{_esc(stage["label"])}</span>
-  <div style="flex:1;position:relative;">
-    <div style="margin-left:{margin:.1f}%;width:{pct:.1f}%;height:72px;background:var(--c-primary);border-radius:12px;opacity:{1 - i * 0.15:.2f};display:flex;align-items:center;justify-content:center;">
-      <span style="color:white;font-weight:600;font-size:var(--type-small);">{stage["value"]}</span>
-    </div>
+        excl_html = f'<span class="funnel-excl">\u2212{_esc(str(excluded))}</span>' if excluded else '<span class="funnel-excl"></span>'
+
+        parts.append(f"""<div class="funnel-stage">
+  <div class="funnel-box{final_cls}">
+    <span>{_esc(stage["label"])}</span>
+    <span class="funnel-val">{stage["value"]:,}</span>
   </div>
   {excl_html}
 </div>""")
+        if not is_last:
+            parts.append('<div class="funnel-arrow">\u2193</div>')
 
-    # Side stats if provided
+    # Side stats as footer note
     side_stats = data.get("sideStats", [])
-    side_html = ""
+    footer = ""
     if side_stats:
-        stat_items = []
-        for ss in side_stats:
-            stat_items.append(f'<div style="text-align:center;"><div style="font-size:var(--type-subtitle);font-weight:700;color:var(--c-primary);">{_esc(str(ss.get("value", "")))}</div><div style="font-size:var(--type-label);color:var(--c-text-muted);">{_esc(ss.get("label", ""))}</div></div>')
-        side_html = f'<div style="min-width:140px;display:flex;flex-direction:column;gap:20px;justify-content:center;">{chr(10).join(stat_items)}</div>'
+        notes = " \u00b7 ".join(f'{ss.get("value", "")} {ss.get("label", "")}' for ss in side_stats)
+        footer = f'<p class="footer-note">{_esc(notes)}</p>'
 
-    funnel_content = f"""<div style="display:flex;flex-direction:column;gap:12px;flex:1;">
-  {chr(10).join(bars)}
-</div>"""
-
-    if side_html:
-        funnel_content = f"""<div style="display:flex;gap:32px;flex:1;align-items:center;">
-  <div style="display:flex;flex-direction:column;gap:12px;flex:1;">
-    {chr(10).join(bars)}
+    return f"""<div class="viz">
+  {_viz_title(title)}
+  <div class="flex-col" style="gap:0;max-width:700px;">
+    {chr(10).join(parts)}
   </div>
-  {side_html}
-</div>"""
-
-    return f"""<div style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  {funnel_content}
+  {footer}
 </div>"""
 
 
@@ -426,20 +450,27 @@ def _render_steps(title: str, data: dict) -> str:
     if not steps:
         return ""
 
+    cols = data.get("columns", 1)
     items = []
     for step in steps:
         num = step.get("number", "")
-        items.append(f"""<div style="display:flex;gap:20px;align-items:flex-start;">
-  <div style="width:64px;height:64px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-body);flex-shrink:0;">{num}</div>
+        num_str = _fmt_num(num)
+        items.append(f"""<div class="item-row">
+  <span class="viz-num">{_esc(num_str)}</span>
   <div style="flex:1;">
-    <p style="margin:0;font-weight:600;font-size:var(--type-body);">{_esc(step.get("title", ""))}</p>
-    <p style="margin:8px 0 0;font-size:var(--type-small);color:var(--c-text-muted);line-height:1.4;">{_esc(step.get("description", ""))}</p>
+    <p class="item-title">{_esc(step.get("title", ""))}</p>
+    <p class="item-desc">{_esc(step.get("description", ""))}</p>
   </div>
 </div>""")
 
-    return f"""<div style="display:flex;flex-direction:column;gap:24px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  {chr(10).join(items)}
+    if cols > 1:
+        grid = f'<div style="display:grid;grid-template-columns:repeat({cols},1fr);gap:24px 48px;">{chr(10).join(items)}</div>'
+    else:
+        grid = chr(10).join(items)
+
+    return f"""<div class="viz" style="gap:24px;">
+  {_viz_title(title)}
+  {grid}
 </div>"""
 
 
@@ -449,25 +480,22 @@ def _render_proportion(title: str, data: dict) -> str:
     if not blocks or total == 0:
         return ""
 
-    default_colors = WARM_SERIF.chart_colors
     cells = []
-    for i, b in enumerate(blocks):
-        color = b.get("color", default_colors[i % len(default_colors)])
-        for _ in range(b.get("count", 0)):
-            cells.append(f'<div style="width:56px;height:56px;border-radius:8px;background:{color};"></div>')
-
     legend = []
     for i, b in enumerate(blocks):
-        color = b.get("color", default_colors[i % len(default_colors)])
-        pct = b.get("count", 0) / total * 100
-        legend.append(f'<div style="display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border-radius:4px;background:{color};"></span><span style="font-size:var(--type-small);">{_esc(b["label"])} ({pct:.0f}%)</span></div>')
+        color = _chart_color(i)
+        count = b.get("count", 0)
+        for _ in range(count):
+            cells.append(f'<div class="prop-cell" style="background:{color};"></div>')
+        pct = count / total * 100
+        legend.append(_swatch(f'{b["label"]} ({pct:.0f}%)', color))
 
-    return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
+    return f"""<div class="viz">
+  {_viz_title(title)}
   <div style="display:flex;flex-wrap:wrap;gap:6px;">
     {chr(10).join(cells)}
   </div>
-  <div style="display:flex;gap:24px;">
+  <div class="viz-legend">
     {chr(10).join(legend)}
   </div>
 </div>"""
@@ -475,19 +503,17 @@ def _render_proportion(title: str, data: dict) -> str:
 
 def _render_flow(title: str, data: dict) -> str:
     nodes = data.get("nodes", [])
-    edges = data.get("edges", [])
     if not nodes:
         return ""
 
-    # Render nodes with arrows between them
     parts = []
     for i, node in enumerate(nodes):
-        parts.append(f"""<div style="background:white;border:2px solid var(--c-primary);border-radius:12px;padding:16px 24px;font-size:var(--type-small);font-weight:600;text-align:center;min-width:120px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">{_esc(node["label"])}</div>""")
+        parts.append(f'<div class="flow-node">{_esc(node["label"])}</div>')
         if i < len(nodes) - 1:
-            parts.append('<div style="font-size:32px;color:var(--c-primary);display:flex;align-items:center;">&#8594;</div>')
+            parts.append('<div class="flow-arrow">&#8594;</div>')
 
-    return f"""<div style="display:flex;flex-direction:column;gap:24px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
+    return f"""<div class="viz" style="gap:24px;">
+  {_viz_title(title)}
   <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
     {chr(10).join(parts)}
   </div>
@@ -500,8 +526,6 @@ def _render_area_blocks(title: str, data: dict) -> str:
     if not blocks:
         return ""
 
-    default_colors = WARM_SERIF.chart_colors
-
     # Size presets: height and font sizing
     size_map = {
         "large": ("240px", "1fr", "var(--type-subtitle)", "var(--type-small)"),
@@ -511,7 +535,7 @@ def _render_area_blocks(title: str, data: dict) -> str:
 
     block_html = []
     for i, b in enumerate(blocks):
-        color = b.get("color", default_colors[i % len(default_colors)])
+        color = _chart_color(i)
         size = b.get("size", "medium")
         h, _, val_size, label_size = size_map.get(size, size_map["medium"])
         value = _esc(str(b.get("value", "")))
@@ -522,7 +546,7 @@ def _render_area_blocks(title: str, data: dict) -> str:
         detail_html = f'<span style="font-size:{label_size};opacity:0.85;">{detail}</span>' if detail else ""
         sub_html = f'<span style="font-size:{label_size};opacity:0.7;">{sub_detail}</span>' if sub_detail else ""
 
-        block_html.append(f"""<div style="background:{color};border-radius:16px;padding:24px 28px;min-height:{h};display:flex;flex-direction:column;justify-content:space-between;color:white;flex:1;">
+        block_html.append(f"""<div style="background:{color};border-radius:16px;padding:24px 28px;min-height:{h};display:flex;flex-direction:column;justify-content:space-between;color:var(--c-text-light);flex:1;">
   <div style="font-size:{val_size};font-weight:700;">{value}</div>
   <div style="display:flex;flex-direction:column;gap:4px;">
     <span style="font-size:{label_size};font-weight:600;">{label}</span>
@@ -537,27 +561,29 @@ def _render_area_blocks(title: str, data: dict) -> str:
     if side_list:
         items = side_list.get("items", [])
         li_html = "".join(f'<li style="font-size:var(--type-label);line-height:1.6;">{_esc(str(item))}</li>' for item in items)
-        side_html = f"""<div style="min-width:260px;background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+        side_html = f"""<div style="min-width:260px;">
   <p style="font-size:var(--type-small);font-weight:600;margin:0 0 12px;">{_esc(side_list.get("title", ""))}</p>
-  <ul style="margin:0;padding-left:20px;">{li_html}</ul>
+  <ul style="margin:0;padding-left:20px;list-style:none;">{li_html}</ul>
 </div>"""
 
+    blocks_joined = "\n".join(block_html)
+
     inner = f"""<div style="display:flex;gap:16px;flex:1;align-items:stretch;">
-  {chr(10).join(block_html)}
+  {blocks_joined}
 </div>"""
 
     if side_html:
         inner = f"""<div style="display:flex;gap:32px;flex:1;align-items:stretch;">
   <div style="flex:1;display:flex;flex-direction:column;gap:16px;">
     <div style="display:flex;gap:16px;flex:1;align-items:stretch;">
-      {chr(10).join(block_html)}
+      {blocks_joined}
     </div>
   </div>
   {side_html}
 </div>"""
 
-    return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
+    return f"""<div class="viz">
+  {_viz_title(title)}
   {inner}
 </div>"""
 
@@ -568,7 +594,6 @@ def _render_stacked_bar(title: str, data: dict) -> str:
     if not segments:
         return ""
 
-    default_colors = WARM_SERIF.chart_colors
     total = sum(s.get("value", 0) for s in segments)
     if total == 0:
         return ""
@@ -576,47 +601,55 @@ def _render_stacked_bar(title: str, data: dict) -> str:
     # Build stacked segments
     seg_html = []
     for i, s in enumerate(segments):
-        color = s.get("color", default_colors[i % len(default_colors)])
+        color = _chart_color(i)
         pct = s["value"] / total * 100
-        seg_html.append(f'<div style="width:{pct:.1f}%;height:100%;background:{color};display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:var(--type-small);overflow:hidden;white-space:nowrap;">{pct:.0f}%</div>')
+        seg_html.append(f'<div style="width:{pct:.1f}%;height:100%;background:{color};display:flex;align-items:center;justify-content:center;color:var(--c-text-light);font-weight:600;font-size:var(--type-small);overflow:hidden;white-space:nowrap;">{pct:.0f}%</div>')
 
     # Legend
     legend_items = []
     for i, s in enumerate(segments):
-        color = s.get("color", default_colors[i % len(default_colors)])
-        legend_items.append(f'<div style="display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border-radius:4px;background:{color};flex-shrink:0;"></span><span style="font-size:var(--type-small);">{_esc(s["label"])} ({s["value"]})</span></div>')
+        color = _chart_color(i)
+        legend_items.append(_swatch(f'{s["label"]} ({s["value"]})', color))
 
     # Country labels if provided
     countries = data.get("countries", [])
     countries_html = ""
     if countries:
-        tags = " ".join(f'<span style="background:var(--c-primary-light);color:var(--c-primary);padding:6px 16px;border-radius:20px;font-size:var(--type-label);font-weight:500;">{_esc(c)}</span>' for c in countries)
+        tags = " ".join(f'<span class="pill">{_esc(c)}</span>' for c in countries)
         countries_html = f'<div style="display:flex;gap:8px;flex-wrap:wrap;">{tags}</div>'
 
     # Callout if provided
     callout = data.get("callout")
     callout_html = ""
     if callout:
-        callout_html = f"""<div style="background:var(--c-accent-light);border-left:4px solid var(--c-accent);border-radius:0 12px 12px 0;padding:16px 24px;">
-  <div style="font-size:var(--type-subtitle);font-weight:700;color:var(--c-accent);">{_esc(str(callout.get("value", "")))}</div>
-  <div style="font-size:var(--type-label);color:var(--c-text-muted);">{_esc(callout.get("label", ""))}</div>
-</div>"""
+        callout_html = _callout(str(callout.get("value", "")), callout.get("label", ""))
 
-    return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  <div style="display:flex;height:96px;border-radius:16px;overflow:hidden;">
+    left_parts = f"""<div class="flex-col" style="flex:1;">
+  <div style="display:flex;height:56px;overflow:hidden;">
     {chr(10).join(seg_html)}
   </div>
-  <div style="display:flex;gap:24px;flex-wrap:wrap;">
+  <div class="viz-legend">
     {chr(10).join(legend_items)}
   </div>
   {countries_html}
+</div>"""
+
+    if callout_html:
+        content = f"""<div class="split">
+  {left_parts}
   {callout_html}
+</div>"""
+    else:
+        content = left_parts
+
+    return f"""<div class="viz">
+  {_viz_title(title)}
+  {content}
 </div>"""
 
 
 def _render_card_grid(title: str, data: dict) -> str:
-    """Numbered cards in a grid layout."""
+    """Numbered items in a grid layout."""
     cards = data.get("cards", [])
     if not cards:
         return ""
@@ -625,17 +658,19 @@ def _render_card_grid(title: str, data: dict) -> str:
     card_html = []
     for c in cards:
         num = c.get("number", "")
-        card_html.append(f"""<div style="background:white;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;gap:20px;align-items:flex-start;">
-  <div style="width:56px;height:56px;border-radius:50%;background:var(--c-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--type-small);flex-shrink:0;">{num}</div>
+        # Format as zero-padded two-digit number like the reference
+        num_str = _fmt_num(num)
+        card_html.append(f"""<div class="item-row">
+  <span class="viz-num">{_esc(num_str)}</span>
   <div style="flex:1;">
-    <p style="margin:0;font-weight:600;font-size:var(--type-body);">{_esc(c.get("title", ""))}</p>
-    <p style="margin:8px 0 0;font-size:var(--type-small);color:var(--c-text-muted);line-height:1.5;">{_esc(c.get("description", ""))}</p>
+    <p class="item-title">{_esc(c.get("title", ""))}</p>
+    <p class="item-desc">{_esc(c.get("description", ""))}</p>
   </div>
 </div>""")
 
-    return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  <div style="display:grid;grid-template-columns:repeat({cols},1fr);gap:20px;">
+    return f"""<div class="viz">
+  {_viz_title(title)}
+  <div style="display:grid;grid-template-columns:repeat({cols},1fr);gap:24px 48px;">
     {chr(10).join(card_html)}
   </div>
 </div>"""
@@ -648,32 +683,32 @@ def _render_two_panel(title: str, data: dict) -> str:
     if not left and not right:
         return ""
 
-    def _panel(panel: dict) -> str:
-        color = panel.get("color", "var(--c-primary)")
+    def _panel(panel: dict, idx: int = 0) -> str:
+        color = _chart_color(idx)
         tags = panel.get("tags", [])
         tags_html = ""
         if tags:
-            tag_spans = " ".join(
-                f'<span style="background:rgba(255,255,255,0.15);padding:6px 14px;border-radius:20px;font-size:var(--type-label);">{_esc(t)}</span>'
-                for t in tags
-            )
-            tags_html = f'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">{tag_spans}</div>'
+            tag_spans = " ".join(f'<span class="panel-tag">{_esc(t)}</span>' for t in tags)
+            label = panel.get("tagsLabel", "")
+            label_html = f'<span class="label" style="margin:0;">{_esc(label)}</span>' if label else ""
+            tags_html = f'<div class="panel-tags">{label_html}{tag_spans}</div>'
 
-        return f"""<div style="flex:1;background:{color};border-radius:20px;padding:40px;color:white;display:flex;flex-direction:column;gap:16px;">
-  <p style="font-size:var(--type-body);font-weight:700;margin:0;">{_esc(panel.get("title", ""))}</p>
-  <p style="font-size:var(--type-small);margin:0;opacity:0.9;line-height:1.5;">{_esc(panel.get("description", ""))}</p>
+        return f"""<div class="panel">
+  <div class="panel-rule" style="background:{color};"></div>
+  <p class="panel-title">{_esc(panel.get("title", ""))}</p>
+  <p class="text-muted" style="margin:0;">{_esc(panel.get("description", ""))}</p>
   {tags_html}
 </div>"""
 
     panels = []
     if left:
-        panels.append(_panel(left))
+        panels.append(_panel(left, 0))
     if right:
-        panels.append(_panel(right))
+        panels.append(_panel(right, 1))
 
-    return f"""<div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
-  <p style="font-size:var(--type-small);font-weight:600;margin:0;color:var(--c-text-muted);">{_esc(title)}</p>
-  <div style="display:flex;gap:24px;">
+    return f"""<div class="viz">
+  {_viz_title(title)}
+  <div style="display:flex;gap:48px;">
     {chr(10).join(panels)}
   </div>
 </div>"""
@@ -687,45 +722,39 @@ def _esc(s: str) -> str:
     return html.escape(s, quote=True)
 
 
-# Scene type -> background style
-_BG_STYLES = {
-    "title": "dark",
-    "closing": "dark",
-    "significance": "dark",
-    "accent": "dark",
-    "dark": "dark",
-}
-
-
-def _slide_html(slide: _Slide, index: int) -> str:
-    bg = _BG_STYLES.get(slide.slide_type, "")
-    bg_class = f" {bg}" if bg else ""
-
+def _slide_html(slide: _Slide, index: int, doc: PaperDocument | None = None) -> str:
     if slide.slide_type == "title":
-        return _title_slide(slide, index)
+        return _title_slide(slide, index, doc)
     if slide.slide_type == "closing":
         return _closing_slide(slide, index)
-    return _content_slide(slide, index, bg_class)
+    return _content_slide(slide, index)
 
 
-def _title_slide(slide: _Slide, index: int) -> str:
-    subtitle_html = ""
-    if slide.bullets:
-        subtitle_html = "\n".join(
-            f'      <p class="slide-subtitle">{_esc(b)}</p>' for b in slide.bullets
-        )
+def _title_slide(slide: _Slide, index: int, doc: PaperDocument | None = None) -> str:
+    meta = doc.meta if doc else None
+    title = meta.title if meta and meta.title else slide.title
 
-    return f"""  <section data-label="{_esc(f'{index+1:02d} Title')}">
-    <div class="slide-pad dark" style="justify-content: flex-end; gap: 32px; position: relative; overflow: hidden;">
-      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0;pointer-events:none;opacity:0.12;">
-        <circle cx="1600" cy="200" r="320" fill="none" stroke="var(--c-primary)" stroke-width="3"/>
-        <circle cx="1650" cy="250" r="200" fill="none" stroke="var(--c-accent)" stroke-width="2"/>
-        <rect x="1400" y="600" width="400" height="400" rx="16" fill="none" stroke="var(--c-primary)" stroke-width="2" transform="rotate(15 1600 800)"/>
-        <line x1="0" y1="900" x2="800" y2="900" stroke="var(--c-primary)" stroke-width="2" opacity="0.5"/>
-      </svg>
-      <p class="label">{_esc(slide.bullets[1] if len(slide.bullets) > 1 else '')}</p>
-      <h1 class="slide-title" style="font-size: 72px; max-width: 1400px;">{_esc(slide.title)}</h1>
-{subtitle_html}
+    # Authors
+    authors_html = ""
+    if meta and meta.authors:
+        authors_html = f'      <p style="font-size: var(--type-body); color: var(--c-text); margin: 0;">{_esc(", ".join(meta.authors))}</p>'
+
+    # Venue + year
+    venue_html = ""
+    venue_parts = []
+    if meta and meta.venue:
+        venue_parts.append(meta.venue)
+    if meta and meta.year:
+        venue_parts.append(str(meta.year))
+    if venue_parts:
+        venue_html = f'      <p style="font-size: var(--type-small); color: var(--c-text-muted); margin: 0; font-weight: 300;">{_esc(" · ".join(venue_parts))}</p>'
+
+    return f"""  <section data-label="{_esc(f'{index+1:02d} Title')}" aria-label="{_esc(title)}">
+    <div class="slide-pad" style="justify-content: center; gap: 24px;">
+      <div class="accent-line"></div>
+      <h1 class="slide-title" style="font-size: var(--text-4xl); max-width: 1400px;">{_esc(title)}</h1>
+{authors_html}
+{venue_html}
     </div>
   </section>"""
 
@@ -733,26 +762,30 @@ def _title_slide(slide: _Slide, index: int) -> str:
 def _closing_slide(slide: _Slide, index: int) -> str:
     body_html = ""
     if slide.body:
-        body_html = f'      <p style="font-size: var(--type-body); color: rgba(255,255,255,0.5); margin: 0; max-width: 900px;">{_esc(slide.body)}</p>'
+        if slide.body_is_html:
+            body_html = f'      <div style="max-width: 1000px;">{slide.body}</div>'
+        else:
+            body_html = f'      <p style="font-size: var(--type-body); color: var(--c-text-muted); margin: 0; max-width: 900px; line-height: 1.6;">{_esc(slide.body)}</p>'
 
-    return f"""  <section data-label="{_esc(f'{index+1:02d} {slide.label}')}">
-    <div class="slide-pad dark" style="justify-content: center; align-items: center; gap: 40px; text-align: center; position: relative; overflow: hidden;">
-      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0;pointer-events:none;opacity:0.08;">
-        <circle cx="300" cy="800" r="320" fill="none" stroke="var(--c-primary)" stroke-width="3"/>
-        <circle cx="1600" cy="200" r="200" fill="none" stroke="var(--c-accent)" stroke-width="2"/>
-        <rect x="100" y="100" width="300" height="300" rx="16" fill="none" stroke="var(--c-primary)" stroke-width="2" transform="rotate(-10 250 250)"/>
-      </svg>
-      <p class="label" style="font-size: var(--type-small);">Thank You</p>
-      <h2 class="slide-title" style="font-size: 56px; max-width: 1200px;">{_esc(slide.title)}</h2>
+    return f"""  <section data-label="{_esc(f'{index+1:02d} {slide.label}')}" aria-label="{_esc(slide.title)}">
+    <div class="slide-pad" style="justify-content: center; align-items: center; gap: 32px; text-align: center;">
+      <div class="accent-line"></div>
+      <h2 class="slide-title" style="font-size: var(--text-3xl); max-width: 1200px;">{_esc(slide.title)}</h2>
 {body_html}
+      <p style="font-size: var(--type-small); color: var(--c-text-muted); margin-top: var(--space-8);">Thank you</p>
     </div>
   </section>"""
 
 
-def _content_slide(slide: _Slide, index: int, bg_class: str) -> str:
+# Viz types that are wide/multi-element — explanation goes below
+_WIDE_VIZ_TYPES = {"stat_card", "comparison", "steps", "card_grid", "two_panel", "funnel"}
+
+
+def _content_slide(slide: _Slide, index: int) -> str:
     has_image = slide.figure_src is not None
     has_bullets = bool(slide.bullets)
     has_body = bool(slide.body)
+    has_explanation = bool(slide.explanation)
 
     # Build content area
     content_parts = []
@@ -768,10 +801,7 @@ def _content_slide(slide: _Slide, index: int, bg_class: str) -> str:
     if has_bullets:
         items = []
         for b in slide.bullets:
-            items.append(f"""          <div style="display: flex; gap: 16px; align-items: flex-start;">
-            <span style="color: var(--c-accent); font-size: 28px; line-height: 1; margin-top: 4px; flex-shrink: 0;">&#9679;</span>
-            <span style="font-size: var(--type-body); line-height: 1.5;">{_esc(b)}</span>
-          </div>""")
+            items.append(f'          <div class="bullet-item"><span>{_esc(b)}</span></div>')
         content_parts.append(
             '      <div style="display: flex; flex-direction: column; gap: var(--gap-item);">\n'
             + "\n".join(items)
@@ -785,32 +815,56 @@ def _content_slide(slide: _Slide, index: int, bg_class: str) -> str:
         if slide.figure_caption:
             cap = f'\n          <figcaption style="font-size: var(--type-label); color: var(--c-text-muted); margin-top: 12px;">{_esc(slide.figure_caption)}</figcaption>'
         image_html = f"""      <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
-        <figure style="max-width: 100%; text-align: center;">
-          <img src="{_esc(slide.figure_src or "")}" alt="{_esc(slide.figure_caption or slide.title)}" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);">{cap}
+        <figure style="max-width: 100%; text-align: center; margin: 0;">
+          <img src="{_esc(slide.figure_src or "")}" alt="{_esc(slide.figure_caption or slide.title)}" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 24px var(--c-shadow);">{cap}
         </figure>
       </div>"""
 
-    # Layout: split if image, full if not
+    # Explanation HTML
+    explanation_html = ""
+    if has_explanation:
+        explanation_html = f'<p class="viz-caption">{_esc(slide.explanation)}</p>'
+
+    # Layout: determine how to place explanation relative to chart
+    is_wide_viz = slide.viz_type in _WIDE_VIZ_TYPES
+
     if has_image and (has_body or has_bullets):
-        body_html = f"""    <div style="display: flex; gap: 64px; flex: 1; align-items: center; margin-top: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
+        body_html = f"""    <div class="split" style="gap:64px;">
+      <div class="split-main" style="flex:1;">
 {chr(10).join(content_parts)}
       </div>
 {image_html}
     </div>"""
     elif has_image:
-        body_html = f"""    <div style="flex: 1; display: flex; align-items: center; justify-content: center; margin-top: 16px;">
+        body_html = f"""    <div class="flex-center" style="flex:1;">
 {image_html}
     </div>"""
+    elif has_explanation and slide.body_is_html and not is_wide_viz:
+        # Single chart: chart left (60%), explanation right (40%)
+        body_html = f"""    <div class="split">
+      <div class="split-main">
+{chr(10).join(content_parts)}
+      </div>
+      <div class="split-aside">
+        {explanation_html}
+      </div>
+    </div>"""
+    elif has_explanation and slide.body_is_html and is_wide_viz:
+        # Wide/multi chart: chart on top, explanation below
+        body_html = f"""    <div class="flex-col" style="flex:1;justify-content:center;">
+{chr(10).join(content_parts)}
+      {explanation_html}
+    </div>"""
     else:
-        body_html = f"""    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; margin-top: 16px;">
+        body_html = f"""    <div class="flex-col" style="flex:1;justify-content:center;">
 {chr(10).join(content_parts)}
     </div>"""
 
-    return f"""  <section data-label="{_esc(f'{index+1:02d} {slide.label or slide.slide_type.title()}')}">
-    <div class="slide-pad{bg_class}" style="gap: var(--gap-title);">
+    return f"""  <section data-label="{_esc(f'{index+1:02d} {slide.label or slide.slide_type.title()}')}" aria-label="{_esc(slide.title)}">
+    <div class="slide-pad">
       <p class="label">{_esc(slide.label)}</p>
       <h2 class="slide-title">{_esc(slide.title)}</h2>
+      <div class="accent-line"></div>
 {body_html}
     </div>
   </section>"""
@@ -823,10 +877,8 @@ def _build_html(
     width: int,
     height: int,
 ) -> str:
-    slides_html = "\n\n".join(_slide_html(s, i) for i, s in enumerate(slides))
+    slides_html = "\n\n".join(_slide_html(s, i, doc) for i, s in enumerate(slides))
 
-    # Speaker notes JSON
-    import json
     notes_json = json.dumps(narrations, ensure_ascii=False, indent=2)
 
     # Read deck-stage.js from templates

@@ -1,0 +1,128 @@
+## Design Context
+
+### Users
+Researchers and academics who need polished slide decks generated from their papers. They present at conferences, journal clubs, and seminars. The slides must look professionally designed without manual effort — the system auto-generates HTML slides from paper content and data.
+
+### Brand Personality
+Authoritative, warm, refined. The visual language says "this research matters" through elegant typography and restrained color.
+
+### Aesthetic Direction
+**Warm academic serif** — Lora headings on a warm linen background, Nunito Sans body text, earthy brown/orange palette. Anti-references: corporate blue decks, gradient-heavy SaaS presentations, dark-mode-first tech aesthetics. The look is closer to a well-typeset journal article or a McKinsey report than a startup pitch deck.
+
+### Design Principles
+
+1. **Data speaks, decoration listens** — Every slide should lead with numbers, charts, or structured content. Decorative elements (SVG shapes on title/closing) are subtle and low-opacity. No gratuitous shadows, gradients, or rounded-card stacking.
+
+2. **Generous negative space** — 80px padding on all sides. Content is vertically centered in the available space below the title block. Slides should feel spacious, never cramped. Let the data breathe.
+
+3. **Consistent slide anatomy** — Every content slide follows the same top structure: uppercase section label → large serif title → accent line → content. This rhythm is never broken.
+
+4. **Two modes: light and dark** — Light slides (#F2EDE8 bg) for content and data. Dark slides (#2E2A26 bg) for dramatic moments: title, synthesis/gaps, closing. Dark slides are used sparingly (3-4 per deck).
+
+5. **Flat data, no card soup** — Data visualizations are clean and flat. Tables use thin 1px row separators and uppercase muted column headers. Bars are simple filled rectangles. Stats are oversized serif numbers. Avoid wrapping every element in a shadowed card.
+
+---
+
+## Slide Design System
+
+### Color Tokens
+| Token | Value | Usage |
+|---|---|---|
+| `--c-bg` | `#F2EDE8` | Light slide background |
+| `--c-bg-dark` | `#2E2A26` | Dark slide background |
+| `--c-text` | `#2E2A26` | Body text on light |
+| `--c-text-light` | `#F2EDE8` | Body text on dark |
+| `--c-text-muted` | `#8A8480` | Labels, captions, secondary text |
+| `--c-primary` | `#9B6B3D` | Accent line, stat numbers, labels on dark |
+| `--c-accent` | `#B85C3A` | Emphasis stats, callout borders, tags |
+| `--c-primary-light` | `#D5CFC9` | Bar tracks, table borders, neutral fill |
+| `--c-card` | `#FFFFFF` | Card/surface backgrounds (use sparingly) |
+| `--c-accent-light` | `#FEF0EA` | Callout background tint |
+
+### Typography — 4-Level Hierarchy
+
+| Level | Role | Font | Size | Weight | Color | Notes |
+|---|---|---|---|---|---|---|
+| L1 | **Slide title** | Lora (serif) | 60px `--text-3xl` | 700 | `--c-text` dark brown | Largest, commands the slide |
+| L2 | **Chart name** | Nunito Sans (sans) | 28px | 600 | `--c-primary` copper | Identifies the visualization |
+| L3 | **Chart content** | Nunito Sans (sans) | 26px `--type-small` | 400 | `--c-text` dark brown | Data labels, table cells, legends |
+| L4 | **Explanation** | Lora (serif) | 26px `--type-small` | 400 italic | `--c-text-muted` grey | Insight caption, editorial voice |
+
+**Structural markers** (section labels, table headers, numbered items, tags) use JetBrains Mono at `--type-label` (22px), weight 500, uppercase with letter-spacing.
+
+| Role | Font | Size | Weight | Color |
+|---|---|---|---|---|
+| Section label | JetBrains Mono | 22px `--type-label` | 500 | `--c-primary` copper |
+| Table header | JetBrains Mono | 22px `--type-label` | 500 | `--c-text-muted` |
+| Numbered items | JetBrains Mono | 30px `--type-body` | 500 | `--c-text-muted` |
+| Stat number | Lora | 80px | 700 | `--c-primary` |
+| Callout title | Lora | 30px italic | 700 | `--c-primary` |
+| Callout text | Lora | 26px italic | 400 | `--c-text-muted` |
+
+### Spacing
+| Token | Value | Usage |
+|---|---|---|
+| `--slide-pad` | `80px` | Inner padding of every slide |
+| `--gap-title` | `16px` | Between label, title, accent-line |
+| `--gap-item` | `20px` | Between content items |
+
+### Slide Anatomy (Content Slides)
+```
+┌─────────────────────────────────────────────────────┐
+│  80px padding                                        │
+│                                                      │
+│  SECTION LABEL (uppercase, muted, small)             │
+│  Large Serif Title                                   │
+│  ████ (48px accent line)                             │
+│                                                      │
+│              ┌─────────────────────┐                 │
+│              │                     │                 │
+│              │  Content area       │                 │
+│              │  (vertically        │                 │
+│              │   centered in       │                 │
+│              │   remaining space)  │                 │
+│              │                     │                 │
+│              └─────────────────────┘                 │
+│                                                      │
+│  80px padding                                        │
+└─────────────────────────────────────────────────────┘
+```
+
+### Slide Anatomy (Title / Closing)
+- Dark background
+- Title slide: left-aligned, title at vertical center, subtle SVG decorations at low opacity
+- Closing slide: centered, accent line above title, stat recap row, "Thank you" message
+
+### Data Visualization Patterns
+
+**Horizontal bar chart** — Labels right-aligned on the left, bar fills in the middle, percentage value on the right or inside the bar. Insight callout text to the right in italic serif.
+
+**Stat cards** — Oversized serif number (primary or accent color) with a thin horizontal rule above it. Small muted label below. Arranged in a row at the bottom of the slide.
+
+**Tables** — Clean rows with thin 1px border separators. Uppercase muted column headers. Optional inline mini-bars in cells. No card wrapping.
+
+**Funnel** — Vertical flow with bordered rectangular stages. Down-arrow (↓) between stages. Exclusion counts to the right. Final stage has dark background.
+
+**Stacked bar** — Single horizontal bar with colored segments and percentage labels inside. Legend with swatches below. Optional callout stat.
+
+**Two-panel** — Side-by-side panels separated by a colored horizontal rule. Tags/pills at the bottom. No card wrapper — just typography and rules.
+
+**Numbered grid** — 2-column grid with muted numbers (01, 02...) next to bold titles and descriptions. Used for gaps, priorities, steps.
+
+### Composition Patterns
+
+**Split layout (60/40)** — Data visualization on the left ~60%, insight/callout text on the right ~40%. The callout uses italic serif for the key takeaway, regular body text for context.
+
+**Full-width data** — Bar charts and tables span the full content width when no sidebar callout is needed.
+
+**Stat row** — 3-4 stat cards in a horizontal row, each with a horizontal rule above, oversized number, and small label. Placed at the bottom of the slide, anchored to the baseline.
+
+### Anti-Patterns (DO NOT)
+- Don't wrap every visualization in a white shadowed card
+- Don't use colored background fills on stat cards (use the slide background + border)
+- Don't center-align body text (left-align everything except closing slide)
+- Don't use more than 4 colors per visualization
+- Don't use pie/donut charts with more than 4 segments
+- Don't put bullets on data slides — use the visualization
+- Don't stack multiple visualizations vertically on one slide
+- Don't use gradients anywhere

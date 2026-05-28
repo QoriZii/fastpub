@@ -32,8 +32,8 @@ def test_slides_use_warm_serif_colors():
         html = out.read_text()
     assert "#F2EDE8" in html  # linen bg
     assert "#9B6B3D" in html  # copper primary
-    assert "Playfair Display" in html
-    assert "Inter" in html
+    assert "Lora" in html
+    assert "Nunito Sans" in html
 
 
 def test_slides_no_dm_sans():

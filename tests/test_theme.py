@@ -4,18 +4,18 @@ from fastpub.render.theme import ThemeTokens, WARM_SERIF, build_web_css, build_s
 def test_warm_serif_has_all_colors():
     assert WARM_SERIF.bg == "#F2EDE8"
     assert WARM_SERIF.bg_dark == "#2E2A26"
-    assert WARM_SERIF.fg == "#2E2A26"
+    assert WARM_SERIF.fg == "#1A1208"
     assert WARM_SERIF.fg_light == "#F2EDE8"
     assert WARM_SERIF.primary == "#9B6B3D"
     assert WARM_SERIF.accent == "#B85C3A"
-    assert WARM_SERIF.muted == "#8A8480"
-    assert WARM_SERIF.chart_neutral == "#D5CFC9"
+    assert WARM_SERIF.muted == "#6B6662"
+    assert WARM_SERIF.chart_neutral == "#B8B0A8"
     assert len(WARM_SERIF.chart_colors) == 4
 
 
 def test_warm_serif_has_typography():
-    assert "Playfair Display" in WARM_SERIF.font_heading
-    assert "Inter" in WARM_SERIF.font_body
+    assert "Lora" in WARM_SERIF.font_heading
+    assert "Nunito Sans" in WARM_SERIF.font_body
     assert "fonts.googleapis.com" in WARM_SERIF.font_import_url
 
 
@@ -31,9 +31,8 @@ def test_build_web_css_contains_tokens():
     assert WARM_SERIF.bg in css
     assert WARM_SERIF.fg in css
     assert WARM_SERIF.primary in css
-    assert "Playfair Display" in css
-    assert "Inter" in css
-    assert "prefers-color-scheme" not in css
+    assert "prefers-color-scheme" in css
+    assert "--accent" in css
 
 
 def test_build_slide_css_contains_tokens():
@@ -43,5 +42,5 @@ def test_build_slide_css_contains_tokens():
     assert WARM_SERIF.bg in css
     assert WARM_SERIF.primary in css
     assert "--font-heading:" in css
-    assert "Playfair Display" in css
+    assert "Lora" in css
     assert "--c-bg-accent" not in css

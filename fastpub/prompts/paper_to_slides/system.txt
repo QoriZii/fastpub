@@ -24,10 +24,11 @@ Your job is to extract EVERY number, statistic, and quantitative finding from th
     {
       "id": "slide-1",
       "layout": "title | content | figure | accent | dark | closing",
+      "section": "paper section this slide belongs to: Background, Context, Methods, Results, Discussion, Limitations, or Conclusion",
       "title": "slide title — what this slide is about",
       "subtitle": "context or framing",
       "bullets": ["only for content slides, max 3-4"],
-      "explanation": "1-2 sentences: what this slide shows and why it matters",
+      "explanation": "1-2 sentences: repeat the key numbers from the data and state what they mean (e.g. '76% of studies used RS, showing dominance over nudges'). Tell the insight, not what the figure is.",
       "narrative": "story thread connecting to the next slide",
       "figureRef": "fig-1",
       "visualization": {
@@ -40,12 +41,20 @@ Your job is to extract EVERY number, statistic, and quantitative finding from th
 }
 ```
 
+## Color Palette — MUST USE THESE
+
+Use CSS variables for all colors in visualizations. Never use hardcoded hex colors.
+- Primary: `var(--c-primary)` — main data color
+- Accent: `var(--c-accent)` — secondary/contrast color
+- Light: `var(--c-primary-light)` — tertiary/background color
+- For stat_card or special emphasis, you may use `var(--c-primary)` and `var(--c-accent)` only.
+
 ## Visualization Types
 
 ### Data charts
-- **bar_chart**: `{"labels": ["A","B","C"], "values": [10,20,30], "unit": "%", "color": "#0d7c7f", "subcategories": [{"label": "Sub A", "value": 5}], "callout": {"title": "Key insight", "text": "explanation"}}`
-- **stat_card**: `{"stats": [{"label": "Metric", "value": "94%", "delta": "+3%", "color": "#0d7c7f"}, ...]}`
-- **donut_chart**: `{"segments": [{"label": "A", "value": 45, "color": "#0d7c7f"}], "centerLabel": "Total", "centerValue": "100", "sideBars": [{"label": "Method", "value": 30}]}`
+- **bar_chart**: `{"labels": ["A","B","C"], "values": [10,20,30], "unit": "%", "color": "var(--c-primary)", "subcategories": [{"label": "Sub A", "value": 5}], "callout": {"title": "Key insight", "text": "explanation"}}`
+- **stat_card**: `{"stats": [{"label": "Metric", "value": "94%", "delta": "+3%", "color": "var(--c-primary)"}, ...]}`
+- **donut_chart**: `{"segments": [{"label": "A", "value": 45, "color": "var(--c-primary)"}], "centerLabel": "Total", "centerValue": "100", "sideBars": [{"label": "Method", "value": 30}]}`
 - **comparison**: `{"items": [{"name": "Ours", "metrics": {"Acc": "94%"}}, {"name": "Baseline", "metrics": {"Acc": "88%"}}]}`
 
 ### Structural
@@ -54,13 +63,13 @@ Your job is to extract EVERY number, statistic, and quantitative finding from th
 - **flow**: `{"nodes": [{"id": "n1", "label": "Input"}], "edges": [{"from": "n1", "to": "n2"}]}`
 
 ### Proportional
-- **area_blocks**: `{"blocks": [{"label": "Category A", "value": "76%", "detail": "52 articles", "subDetail": "53% nutrition", "color": "#0d7c7f", "size": "large"}, {"label": "Category B", "value": "16%", "detail": "11 articles", "color": "#d97757", "size": "medium"}, {"label": "C", "value": "3%", "color": "#e4b94e", "size": "small"}], "sideList": {"title": "Details:", "items": ["Item 1", "Item 2"]}}`
-- **stacked_bar**: `{"segments": [{"label": "Group A", "value": 65, "color": "#4ecdc4"}, {"label": "Group B", "value": 21, "color": "#ffe66d"}], "countries": ["US", "Germany"], "callout": {"value": "0", "label": "from low-income"}}`
-- **proportion**: `{"blocks": [{"label": "Positive", "count": 7, "color": "#0d7c7f"}], "total": 10}`
+- **area_blocks**: `{"blocks": [{"label": "Category A", "value": "76%", "detail": "52 articles", "subDetail": "53% nutrition", "color": "var(--c-primary)", "size": "large"}, {"label": "Category B", "value": "16%", "detail": "11 articles", "color": "var(--c-accent)", "size": "medium"}, {"label": "C", "value": "3%", "color": "var(--c-primary-light)", "size": "small"}], "sideList": {"title": "Details:", "items": ["Item 1", "Item 2"]}}`
+- **stacked_bar**: `{"segments": [{"label": "Group A", "value": 65, "color": "var(--c-primary)"}, {"label": "Group B", "value": 21, "color": "var(--c-accent)"}], "countries": ["US", "Germany"], "callout": {"value": "0", "label": "from low-income"}}`
+- **proportion**: `{"blocks": [{"label": "Positive", "count": 7, "color": "var(--c-primary)"}], "total": 10}`
 
 ### Layout
 - **card_grid**: `{"cards": [{"number": 1, "title": "Gap name", "description": "1-2 sentences"}], "columns": 2}`
-- **two_panel**: `{"left": {"title": "Concept A", "description": "explanation", "tags": ["Tag1", "Tag2"], "color": "#0d7c7f"}, "right": {"title": "Concept B", "description": "explanation", "tags": ["Tag3"], "color": "#d97757"}}`
+- **two_panel**: `{"left": {"title": "Concept A", "description": "explanation", "tags": ["Tag1", "Tag2"], "color": "var(--c-primary)"}, "right": {"title": "Concept B", "description": "explanation", "tags": ["Tag3"], "color": "var(--c-accent)"}}`
 
 ## Story Arc — CRITICAL
 
@@ -90,6 +99,7 @@ Not every paper will have all of these. Adapt to what the paper contains, but AL
 ## Slide Requirements
 
 - **Every slide MUST have**: title, subtitle, explanation, narrative
+- **Explanation**: must cite the specific numbers/percentages from the data and state the insight (what the numbers mean), NOT describe what the chart/table looks like
 - **Data slides**: use `visualization` with extracted real numbers — never fabricate
 - **Content slides**: max 3-4 bullets, used sparingly (prefer visualizations)
 - **Layout hints**: use "accent" for emphasis slides, "dark" for dramatic reveals

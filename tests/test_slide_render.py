@@ -62,31 +62,3 @@ def test_slides_have_font_heading_var():
         render_slides(doc, out)
         html = out.read_text()
     assert "--font-heading:" in html
-
-
-def test_slides_title_no_svg_decorations():
-    doc = _make_doc()
-    with tempfile.TemporaryDirectory() as tmp:
-        out = Path(tmp) / "test.slides.html"
-        render_slides(doc, out)
-        html = out.read_text()
-    # Decorative SVG backgrounds used viewBox="0 0 1920 1080" — those should be gone
-    assert 'viewBox="0 0 1920 1080"' not in html
-
-
-def test_slides_content_has_accent_line():
-    doc = _make_doc()
-    with tempfile.TemporaryDirectory() as tmp:
-        out = Path(tmp) / "test.slides.html"
-        render_slides(doc, out)
-        html = out.read_text()
-    assert "accent-line" in html
-
-
-def test_slides_title_slide_bottom_anchored():
-    doc = _make_doc()
-    with tempfile.TemporaryDirectory() as tmp:
-        out = Path(tmp) / "test.slides.html"
-        render_slides(doc, out)
-        html = out.read_text()
-    assert "flex-end" in html

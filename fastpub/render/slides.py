@@ -716,8 +716,14 @@ def _title_slide(slide: _Slide, index: int) -> str:
         )
 
     return f"""  <section data-label="{_esc(f'{index+1:02d} Title')}">
-    <div class="slide-pad dark" style="justify-content: flex-end; gap: 32px;">
-      <div class="accent-line"></div>
+    <div class="slide-pad dark" style="justify-content: flex-end; gap: 32px; position: relative; overflow: hidden;">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0;pointer-events:none;opacity:0.12;">
+        <circle cx="1600" cy="200" r="320" fill="none" stroke="var(--c-primary)" stroke-width="3"/>
+        <circle cx="1650" cy="250" r="200" fill="none" stroke="var(--c-accent)" stroke-width="2"/>
+        <rect x="1400" y="600" width="400" height="400" rx="16" fill="none" stroke="var(--c-primary)" stroke-width="2" transform="rotate(15 1600 800)"/>
+        <line x1="0" y1="900" x2="800" y2="900" stroke="var(--c-primary)" stroke-width="2" opacity="0.5"/>
+      </svg>
+      <p class="label">{_esc(slide.bullets[1] if len(slide.bullets) > 1 else '')}</p>
       <h1 class="slide-title" style="font-size: 72px; max-width: 1400px;">{_esc(slide.title)}</h1>
 {subtitle_html}
     </div>
@@ -727,11 +733,16 @@ def _title_slide(slide: _Slide, index: int) -> str:
 def _closing_slide(slide: _Slide, index: int) -> str:
     body_html = ""
     if slide.body:
-        body_html = f'      <p style="font-size: var(--type-body); color: var(--c-text-muted); margin: 0; max-width: 900px;">{_esc(slide.body)}</p>'
+        body_html = f'      <p style="font-size: var(--type-body); color: rgba(255,255,255,0.5); margin: 0; max-width: 900px;">{_esc(slide.body)}</p>'
 
     return f"""  <section data-label="{_esc(f'{index+1:02d} {slide.label}')}">
-    <div class="slide-pad dark" style="justify-content: center; align-items: center; gap: 40px; text-align: center;">
-      <div class="accent-line"></div>
+    <div class="slide-pad dark" style="justify-content: center; align-items: center; gap: 40px; text-align: center; position: relative; overflow: hidden;">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0;pointer-events:none;opacity:0.08;">
+        <circle cx="300" cy="800" r="320" fill="none" stroke="var(--c-primary)" stroke-width="3"/>
+        <circle cx="1600" cy="200" r="200" fill="none" stroke="var(--c-accent)" stroke-width="2"/>
+        <rect x="100" y="100" width="300" height="300" rx="16" fill="none" stroke="var(--c-primary)" stroke-width="2" transform="rotate(-10 250 250)"/>
+      </svg>
+      <p class="label" style="font-size: var(--type-small);">Thank You</p>
       <h2 class="slide-title" style="font-size: 56px; max-width: 1200px;">{_esc(slide.title)}</h2>
 {body_html}
     </div>
@@ -798,11 +809,8 @@ def _content_slide(slide: _Slide, index: int, bg_class: str) -> str:
 
     return f"""  <section data-label="{_esc(f'{index+1:02d} {slide.label or slide.slide_type.title()}')}">
     <div class="slide-pad{bg_class}" style="gap: var(--gap-title);">
-      <div>
-        <p class="label">{_esc(slide.label)}</p>
-        <h2 class="slide-title">{_esc(slide.title)}</h2>
-        <div class="accent-line" style="margin-top: 16px;"></div>
-      </div>
+      <p class="label">{_esc(slide.label)}</p>
+      <h2 class="slide-title">{_esc(slide.title)}</h2>
 {body_html}
     </div>
   </section>"""

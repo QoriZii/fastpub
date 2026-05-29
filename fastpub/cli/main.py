@@ -33,15 +33,32 @@ def main(
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-def _outdir(name: str, base: Optional[Path] = None) -> Path:
-    return (base or config.OUTPUT_DIR) / name
+def _get_zh(doc) -> dict:
+    """Return zh translations from doc."""
+    if doc.zh:
+        return doc.zh
+    typer.echo("  Warning: no zh translations found. Re-run analysis to generate them.", err=True)
+    return {}
+
+
+def _resolve_pdf(pdf: str) -> tuple[str, str]:
+    """Validate PDF path/URL and return (resolved_path, base_name)."""
+    from fastpub.pipeline.parse_pdf import _is_url
+    if _is_url(pdf):
+        base_name = Path(pdf.split("?")[0].split("#")[0]).stem or "paper"
+        return pdf, base_name
+    pdf_path = Path(pdf).expanduser().resolve()
+    if not pdf_path.exists():
+        typer.echo(f"Error: {pdf_path} not found.", err=True)
+        raise typer.Exit(1)
+    return str(pdf_path), pdf_path.stem
 
 
 # ── analyze ───────────────────────────────────────────────────────────────────
 
 @app.command()
 def analyze(
-    pdf: Path = typer.Argument(..., help="Path to PDF file"),
+    pdf: str = typer.Argument(..., help="Path or URL to PDF file"),
     output: Optional[Path] = typer.Option(None, "-o", "--output", help="Output path for analysis.json"),
     parser: str = typer.Option("pymupdf", "-p", "--parser", help="PDF parser: pymupdf | mineru | mineru-cloud"),
     audience: str = typer.Option("academic", "--audience", help="Target audience: academic | general"),
@@ -50,17 +67,12 @@ def analyze(
     from fastpub.pipeline.parse_pdf import parse_pdf
     from fastpub.pipeline.analyze import analyze_paper
 
-    pdf = pdf.expanduser().resolve()
-    if not pdf.exists():
-        typer.echo(f"Error: {pdf} not found.", err=True)
-        raise typer.Exit(1)
-
-    base_name = pdf.stem
+    pdf, base_name = _resolve_pdf(pdf)
     out_path = output or config.OUTPUT_DIR / f"{base_name}.analysis.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    typer.echo(f"Parsing: {pdf.name} (parser={parser})")
-    parsed = parse_pdf(str(pdf), parser=parser)
+    typer.echo(f"Parsing: {Path(pdf).name} (parser={parser})")
+    parsed = parse_pdf(pdf, parser=parser)
     typer.echo(f"  {parsed.page_count} pages, {len(parsed.images)} images")
 
     doc = analyze_paper(parsed.text, parsed.images, audience=audience)
@@ -98,11 +110,10 @@ def render(
     for fmt in formats:
         match fmt:
             case "web":
-                from fastpub.pipeline.translate import translate_to_chinese
                 from fastpub.render.web import render_web
 
                 typer.echo(f"Rendering web page…")
-                zh = translate_to_chinese(doc)
+                zh = _get_zh(doc)
                 out_path = output or out_dir / f"{base_name}.html"
                 result = render_web(doc, zh, out_path)
                 typer.echo(f"  Web page: {result}")
@@ -123,7 +134,7 @@ def render(
 
 @app.command()
 def go(
-    pdf: Path = typer.Argument(..., help="Path to PDF file"),
+    pdf: str = typer.Argument(..., help="Path or URL to PDF file"),
     format: str = typer.Option("web", "-f", "--format", help="Comma-separated: web, slides"),
     output: Optional[Path] = typer.Option(None, "-o", "--output", help="Output directory"),
     parser: str = typer.Option("pymupdf", "-p", "--parser", help="PDF parser: pymupdf | mineru | mineru-cloud"),
@@ -134,18 +145,13 @@ def go(
     from fastpub.pipeline.parse_pdf import parse_pdf
     from fastpub.pipeline.analyze import analyze_paper
 
-    pdf = pdf.expanduser().resolve()
-    if not pdf.exists():
-        typer.echo(f"Error: {pdf} not found.", err=True)
-        raise typer.Exit(1)
-
-    base_name = pdf.stem
+    pdf, base_name = _resolve_pdf(pdf)
     out_dir = (output or config.OUTPUT_DIR).expanduser()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # --- Step 1: Analyze ---
     typer.echo("\n--- Step 1/2: Analyzing paper ---")
-    parsed = parse_pdf(str(pdf), parser=parser)
+    parsed = parse_pdf(pdf, parser=parser)
     typer.echo(f"  {parsed.page_count} pages, {len(parsed.images)} images")
 
     doc = analyze_paper(parsed.text, parsed.images, audience=audience)
@@ -160,10 +166,9 @@ def go(
     for fmt in formats:
         match fmt:
             case "web":
-                from fastpub.pipeline.translate import translate_to_chinese
                 from fastpub.render.web import render_web
 
-                zh = translate_to_chinese(doc)
+                zh = _get_zh(doc)
                 result = render_web(doc, zh, out_dir / f"{base_name}.html")
                 typer.echo(f"  Web page: {result}")
 

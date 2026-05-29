@@ -33,44 +33,44 @@ def _make_zh():
     }
 
 
-def test_web_uses_warm_serif_colors():
+def test_web_uses_warm_colors():
     html = _build_html(_make_doc(), _make_zh())
     assert "#F2EDE8" in html  # linen bg
     assert "#9B6B3D" in html  # copper primary
     assert "#2E2A26" in html  # charcoal
-    assert "Playfair Display" in html
-    assert "Inter" in html
 
 
-def test_web_no_dark_mode():
+def test_web_has_dark_mode():
     html = _build_html(_make_doc(), _make_zh())
-    assert "prefers-color-scheme" not in html
+    assert "prefers-color-scheme" in html
 
 
-def test_web_no_section_badges():
+def test_web_has_section_badges():
     html = _build_html(_make_doc(), _make_zh())
-    assert 'class="badge' not in html
+    assert 'class="badge' in html
 
 
-def test_web_sub_issues_left_border():
+def test_web_has_narrative_cards():
     html = _build_html(_make_doc(), _make_zh())
-    # CSS should contain left border for sub-issues
-    assert "sub-issues" in html
-    # No card-style borders on individual sub-issues
-    assert 'class="sub-issue"' in html
+    assert 'class="narrative-grid"' in html
+    assert 'class="card"' in html
 
 
-def test_web_header_is_dark_band():
+def test_web_has_paper_sections_with_bullets():
     html = _build_html(_make_doc(), _make_zh())
-    assert '<header' in html
-    assert "#2E2A26" in html
+    assert 'class="paper-section"' in html
+    assert "<li>" in html
 
 
-def test_web_keywords_bordered_pills():
+def test_web_centered_layout():
+    html = _build_html(_make_doc(), _make_zh())
+    assert "max-width: var(--max-w)" in html
+
+
+def test_web_keywords_as_pills():
     html = _build_html(_make_doc(), _make_zh())
     assert "kw1" in html
-    css_section = html.split("<style>")[1].split("</style>")[0]
-    assert "border:" in css_section or "border: 1px solid" in css_section
+    assert 'class="tag"' in html
 
 
 def test_web_lang_toggle_works():
@@ -80,17 +80,11 @@ def test_web_lang_toggle_works():
     assert 'id="btn-zh"' in html
 
 
-def test_web_has_font_import():
+def test_web_no_google_fonts():
     html = _build_html(_make_doc(), _make_zh())
-    assert "fonts.googleapis.com" in html
-    assert "<link" in html
+    assert "fonts.googleapis.com" not in html
 
 
-def test_web_has_accent_lines():
+def test_web_system_fonts():
     html = _build_html(_make_doc(), _make_zh())
-    assert 'class="accent-line"' in html
-
-
-def test_web_has_content_wrapper():
-    html = _build_html(_make_doc(), _make_zh())
-    assert 'class="content"' in html
+    assert "-apple-system" in html

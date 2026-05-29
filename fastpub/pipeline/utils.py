@@ -4,14 +4,69 @@ from __future__ import annotations
 import re
 import json
 
+from fastpub import config
 
-def make_client():
-    """Create an xAI SDK client (reads XAI_API_KEY from env)."""
-    try:
-        from xai_sdk import Client
-    except ImportError:
-        raise ImportError("pip install xai-sdk")
-    return Client()
+
+def call_llm(
+    *,
+    system_prompt: str,
+    user_content: str | list,
+    max_tokens: int = 8192,
+) -> str:
+    """Call the configured LLM provider and return response text.
+
+    user_content can be a plain string or a list of content parts
+    (for multimodal messages with images).
+    """
+    provider = config.FASTPUB_PROVIDER
+    model = config.FASTPUB_MODEL
+
+    if provider == "xai":
+        return _call_xai(system_prompt, user_content, model, max_tokens)
+    else:
+        return _call_openai(system_prompt, user_content, model, max_tokens)
+
+
+def _call_xai(system_prompt: str, user_content: str | list, model: str, max_tokens: int) -> str:
+    from xai_sdk import Client
+    from xai_sdk.chat import system, user
+
+    client = Client()
+    chat = client.chat.create(
+        model=model,
+        max_tokens=max_tokens,
+        response_format="json_object",
+    )
+    chat.append(system(system_prompt))
+
+    if isinstance(user_content, list):
+        chat.append(user(*user_content))
+    else:
+        chat.append(user(user_content))
+
+    response = chat.sample()
+    return response.content
+
+
+def _call_openai(system_prompt: str, user_content: str | list, model: str, max_tokens: int) -> str:
+    from openai import OpenAI
+
+    provider = config.FASTPUB_PROVIDER
+    if provider == "deepseek":
+        client = OpenAI(api_key=config.DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
+    else:
+        raise ValueError(f"Unknown OpenAI-compatible provider: {provider}")
+
+    response = client.chat.completions.create(
+        model=model,
+        max_tokens=max_tokens,
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ],
+    )
+    return response.choices[0].message.content
 
 
 def parse_llm_json(raw: str) -> dict | list:

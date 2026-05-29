@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import base64
+import tempfile
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 @dataclass
@@ -14,8 +17,24 @@ class ParsedPdf:
     parser: str = "pymupdf"
 
 
+def _is_url(path: str) -> bool:
+    return path.startswith("http://") or path.startswith("https://")
+
+
+def _download_pdf(url: str) -> str:
+    """Download a PDF from a URL to a temporary file, return the file path."""
+    parsed = urlparse(url)
+    suffix = Path(parsed.path).suffix or ".pdf"
+    tmp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+    urllib.request.urlretrieve(url, tmp.name)
+    return tmp.name
+
+
 def parse_pdf(pdf_path: str, parser: str = "pymupdf") -> ParsedPdf:
-    """Parse PDF and extract text + images."""
+    """Parse PDF and extract text + images. Accepts a local path or URL."""
+    if _is_url(pdf_path):
+        pdf_path = _download_pdf(pdf_path)
+
     match parser:
         case "pymupdf":
             return _parse_with_pymupdf(pdf_path)

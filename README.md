@@ -25,10 +25,13 @@ Requirements:
 ```bash
 # Set your API key
 cp .env.example .env
-# Edit .env with your xAI API key
+# Edit .env — set FASTPUB_MODEL and the matching API key
 
 # One-shot: analyze + render web page
 uv run fastpub go paper.pdf
+
+# Works with URLs too
+uv run fastpub go https://example.com/paper.pdf -f web,slides
 
 # Or step by step
 uv run fastpub analyze paper.pdf
@@ -89,11 +92,19 @@ cp .env.example .env
 
 ### Environment Variables
 
-| Variable | Description | Example |
+| Variable | Description | Default |
 |---|---|---|
-| `XAI_API_KEY` | xAI API key | `xai-...` |
-| `XAI_MODEL` | Model ID | `grok-3` |
+| `FASTPUB_MODEL` | Model ID | `grok-3` |
+| `FASTPUB_PROVIDER` | Provider override (auto-detected from model name) | `xai` |
+| `XAI_API_KEY` | xAI API key (for grok models) | — |
+| `DEEPSEEK_API_KEY` | DeepSeek API key (for deepseek models) | — |
 | `FASTPUB_OUTDIR` | Default output directory | `~/fastpub-output` |
+
+Supported models:
+- **xAI**: `grok-3` (default), and other grok models
+- **DeepSeek**: `deepseek-v4-flash`, and other deepseek models
+
+The provider is auto-detected from the model name (`deepseek-*` → DeepSeek, otherwise xAI). Override with `FASTPUB_PROVIDER` if needed.
 
 ## Output Formats
 
@@ -116,7 +127,7 @@ HTML slide deck with:
 ## Pipeline Architecture
 
 ```
-PDF → Parse (pymupdf) → Analyze (xAI LLM) → [Edit] → Render
+PDF → Parse (pymupdf) → Analyze (LLM) → [Edit] → Render
                                                   ├── Web (HTML)
                                                   └── Slides (HTML)
 ```
@@ -131,10 +142,9 @@ fastpub/
 ├── models.py               # PaperDocument dataclasses
 ├── cli/main.py             # Typer CLI commands
 ├── pipeline/
-│   ├── utils.py            # xAI client, JSON parsing
-│   ├── parse_pdf.py        # PDF extraction (pymupdf)
-│   ├── analyze.py          # LLM paper analysis (web + slides)
-│   └── translate.py        # LLM Chinese translation
+│   ├── utils.py            # LLM client (xAI, DeepSeek), JSON parsing
+│   ├── parse_pdf.py        # PDF extraction (pymupdf, local or URL)
+│   └── analyze.py          # LLM paper analysis (web + slides, bilingual)
 ├── prompts/                # Prompt templates (.txt)
 ├── render/
 │   ├── web.py              # Bilingual HTML renderer

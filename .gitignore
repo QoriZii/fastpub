@@ -9,3 +9,9 @@ build/
 *.pptx
 *.analysis.json
 .DS_Store
+.claude/
+.pytest_cache/
+.superpowers/
+.venv/
+docs/
+.impeccable/
